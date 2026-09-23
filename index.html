@@ -1,363 +1,679 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cardápio Digital</title>
-  
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cardápio Digital & Loja Online</title>
+  <!-- Google Fonts & FontAwesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
+    /* ==========================================================================
+       1. VARIÁVEIS DE DESIGN E RESET
+       ========================================================================== */
     :root {
-      --primary-color: #e63946;
-      --secondary-color: #f1faee;
-      --dark-color: #1d3557;
-      --light-color: #f8f9fa;
-      --accent-color: #457b9d;
+      --primary-color: #E53935;
+      --primary-hover: #C62828;
+      --dark-blue: #1A237E;
+      --dark-blue-hover: #0D47A1;
+      --bg-light: #F4F6F9;
+      --card-bg: #FFFFFF;
+      --text-main: #212121;
+      --text-muted: #666666;
+      --border-color: #E0E0E0;
+      --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+      --radius: 12px;
+      --transition: all 0.3s ease;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Inter', sans-serif;
     }
 
     body {
-      background-color: var(--light-color);
-      color: #333;
-      padding-bottom: 120px;
+      background-color: var(--bg-light);
+      color: var(--text-main);
+      padding-bottom: 100px;
+      min-height: 100vh;
     }
 
-    /* Toast Notification */
-    #toast-container {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 9999;
-    }
-    .toast {
-      background: var(--dark-color);
-      color: #fff;
-      padding: 12px 20px;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      animation: fadeIn 0.3s ease;
-    }
-    .toast.success { border-left: 5px solid #2b9348; }
-    .toast.error { border-left: 5px solid #d90429; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; border: none; outline: none; font-family: inherit; }
 
-    /* Topo do Administrador */
+    /* ==========================================================================
+       2. UI COMPONENTS & LAYOUT
+       ========================================================================== */
+    
+    /* Admin Bar */
     .admin-bar {
+      background-color: var(--dark-blue);
+      color: #fff;
+      padding: 10px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 20px;
-      background: var(--dark-color);
-      color: #fff;
-      flex-wrap: wrap;
-      gap: 10px;
+      font-size: 0.85rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
     }
-
-    .admin-controls {
+    .admin-status {
       display: flex;
+      align-items: center;
       gap: 8px;
+      font-weight: 500;
+    }
+    .status-badge {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #4CAF50;
+    }
+    .status-badge.off { background-color: #FFC107; }
+    .admin-actions {
+      display: flex;
+      gap: 10px;
       flex-wrap: wrap;
     }
+    .btn-admin-action {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-admin-action:hover { background: rgba(255,255,255,0.3); }
 
-    /* Cover / Banner Section */
+    /* Store Header & Cover */
     .cover-container {
-      position: relative;
       width: 100%;
       height: 220px;
-      background-color: var(--dark-color);
-      overflow: hidden;
+      position: relative;
+      background-color: #ddd;
     }
-
-    .cover-img {
+    .cover-image {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-
-    /* Header Profile Info */
-    .header-info {
-      padding: 20px;
-      text-align: center;
-      background-color: #fff;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-      margin-bottom: 15px;
+    .store-info-card {
+      max-width: 1000px;
+      margin: -50px auto 20px auto;
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
       position: relative;
+      text-align: center;
+      width: calc(100% - 32px);
     }
-
-    .header-info h1 {
+    .store-name {
       font-size: 1.8rem;
-      color: var(--dark-color);
-      margin-bottom: 5px;
+      font-weight: 700;
+      color: var(--dark-blue);
+      margin-bottom: 6px;
     }
-
-    .header-info p {
-      color: #666;
+    .store-desc {
+      color: var(--text-muted);
       font-size: 0.95rem;
+      margin-bottom: 12px;
     }
-
-    .edit-store-btn {
-      display: none;
-      margin-top: 10px;
-    }
-
-    /* Container Principal */
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 0 15px;
-    }
-
-    /* Pesquisa e Filtro de Categorias */
-    .search-box {
-      margin-bottom: 15px;
-    }
-    .search-box input {
-      width: 100%;
-      padding: 10px 15px;
-      border: 1px solid #ddd;
-      border-radius: 20px;
-      font-size: 0.95rem;
-      outline: none;
-    }
-
-    .category-pills {
+    .btn-edit-store {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: var(--bg-light);
+      color: var(--dark-blue);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
       display: flex;
-      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+    .btn-edit-store:hover { background: #e2e8f0; }
+
+    /* Main Container */
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* Search & Categories Filter */
+    .search-box {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 14px 16px 14px 44px;
+      border: 1px solid var(--border-color);
+      border-radius: 30px;
+      font-size: 0.95rem;
+      background: var(--card-bg);
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.15);
+    }
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    .categories-bar {
+      display: flex;
+      gap: 10px;
       overflow-x: auto;
       padding-bottom: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
       scrollbar-width: none;
     }
-    .category-pills::-webkit-scrollbar { display: none; }
+    .categories-bar::-webkit-scrollbar { display: none; }
 
-    .pill {
-      background: #e0e0e0;
-      color: #333;
-      padding: 6px 16px;
+    .cat-pill {
+      padding: 8px 18px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
       border-radius: 20px;
-      cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
+      font-weight: 500;
       white-space: nowrap;
-      transition: background 0.2s;
+      color: var(--text-muted);
+      transition: var(--transition);
     }
-    .pill.active {
+    .cat-pill.active, .cat-pill:hover {
       background: var(--primary-color);
       color: #fff;
+      border-color: var(--primary-color);
     }
 
-    /* Estilo dos Produtos */
-    .section-title {
+    /* Products Grid */
+    .category-section-title {
       font-size: 1.3rem;
-      color: var(--dark-color);
-      border-bottom: 2px solid var(--primary-color);
-      padding-bottom: 5px;
-      margin-top: 25px;
-      margin-bottom: 15px;
+      font-weight: 700;
+      color: var(--dark-blue);
+      margin: 24px 0 16px 0;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
     }
 
     .product-card {
-      display: flex;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      margin-bottom: 15px;
+      background: var(--card-bg);
+      border-radius: var(--radius);
       overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      transition: var(--transition);
+      border: 1px solid rgba(0,0,0,0.03);
     }
-
-    .product-img-container {
-      width: 120px;
-      min-width: 120px;
-      height: 120px;
-      background-color: #eee;
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
     }
-
+    .product-img-wrapper {
+      width: 100%;
+      height: 180px;
+      background: #f0f0f0;
+      position: relative;
+    }
     .product-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-
     .product-details {
-      padding: 12px;
-      flex-grow: 1;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      flex-grow: 1;
     }
-
     .product-title {
-      font-weight: bold;
-      font-size: 1.1rem;
-      color: #222;
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-main);
     }
-
     .product-desc {
       font-size: 0.85rem;
-      color: #666;
-      margin: 5px 0;
-      white-space: pre-wrap;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      flex-grow: 1;
+      line-height: 1.4;
     }
-
-    .product-bottom-row {
+    .product-bottom {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 5px;
+      margin-top: auto;
     }
-
     .product-price {
-      font-size: 1rem;
-      font-weight: bold;
+      font-size: 1.15rem;
+      font-weight: 700;
       color: var(--primary-color);
     }
+    .btn-add-cart {
+      background: var(--primary-color);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-add-cart:hover { background: var(--primary-hover); }
 
-    .product-actions {
-      display: none;
+    .product-adm-actions {
+      display: flex;
       gap: 8px;
-      margin-top: 8px;
+      position: absolute;
+      top: 10px;
+      right: 10px;
     }
-
-    /* Botões */
-    .btn {
-      padding: 6px 12px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      display: inline-flex;
+    .btn-adm-icon {
+      background: rgba(255,255,255,0.9);
+      color: var(--text-main);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
       align-items: center;
-      gap: 5px;
-    }
-
-    .btn-primary { background: var(--primary-color); color: #fff; }
-    .btn-secondary { background: var(--accent-color); color: #fff; }
-    .btn-danger { background: #d90429; color: #fff; }
-    .btn-success { background: #2b9348; color: #fff; }
-
-    .add-to-cart-btn {
-      background: #25d366;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    /* Estilo dos Modais */
-    .modal-backdrop {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.6);
-      display: none;
       justify-content: center;
+      font-size: 0.8rem;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+    .btn-adm-icon.delete:hover { background: #FFEBEE; color: var(--primary-color); }
+    .btn-adm-icon.edit:hover { background: #E8EAF6; color: var(--dark-blue); }
+
+    /* Cart Footer */
+    .cart-footer {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 32px);
+      max-width: 800px;
+      background: var(--dark-blue);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      z-index: 1000;
+      z-index: 90;
+      transition: var(--transition);
+    }
+    .cart-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .cart-badge {
+      background: var(--primary-color);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+    .cart-total-val {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .btn-whatsapp {
+      background: #25D366;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition);
+    }
+    .btn-whatsapp:hover { background: #1EBE5D; }
+
+    /* Toasts */
+    .toast-container {
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .toast {
+      background: #323232;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+    }
+    .toast.success { border-left: 4px solid #4CAF50; }
+    .toast.error { border-left: 4px solid var(--primary-color); }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
     }
 
+    /* Modais */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition);
+      padding: 16px;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
     .modal-content {
-      background: #fff;
-      padding: 25px;
-      border-radius: 12px;
-      width: 90%;
+      background: var(--card-bg);
+      width: 100%;
       max-width: 500px;
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
       max-height: 90vh;
       overflow-y: auto;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      position: relative;
     }
-
     .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--dark-blue);
+    }
+    .btn-close-modal {
+      background: none;
       font-size: 1.2rem;
-      font-weight: bold;
-      margin-bottom: 15px;
-      color: var(--dark-color);
+      color: var(--text-muted);
     }
 
+    /* Forms */
     .form-group {
-      margin-bottom: 15px;
+      margin-bottom: 16px;
     }
-
-    .form-group label {
+    .form-label {
       display: block;
-      margin-bottom: 5px;
-      font-size: 0.9rem;
-      color: #444;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-main);
     }
-
-    .form-group input, .form-group textarea, .form-group select {
+    .form-control {
       width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary-color);
+      color: #fff;
+      font-weight: 600;
+      border-radius: 8px;
+      margin-top: 10px;
+      transition: var(--transition);
+    }
+    .btn-submit:hover { background: var(--primary-hover); }
+
+    .cat-item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: var(--bg-light);
       border-radius: 6px;
-      font-size: 0.95rem;
-    }
-
-    .modal-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 20px;
-    }
-
-    /* Barra Inferior do Carrinho */
-    .cart-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: var(--dark-color);
-      color: white;
-      padding: 12px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-      z-index: 900;
-    }
-
-    .cart-info {
-      font-size: 0.95rem;
-    }
-
-    .category-item-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px;
-      border-bottom: 1px solid #eee;
+      margin-bottom: 8px;
     }
   </style>
+</head>
+<body>
 
-  <!-- Script Firebase v10 com Firebase Storage Incluído -->
+  <!-- BARRA DE ADMINISTRADOR -->
+  <div class="admin-bar">
+    <div class="admin-status">
+      <span class="status-badge off" id="status-badge"></span>
+      <span id="status-text">Modo Cliente</span>
+    </div>
+    <div class="admin-actions">
+      <div id="adm-buttons-group" style="display: none; gap: 8px;">
+        <button class="btn-admin-action" id="btn-open-cat-modal"><i class="fa-solid fa-tags"></i> Categorias</button>
+        <button class="btn-admin-action" id="btn-open-prod-modal"><i class="fa-solid fa-plus"></i> Novo Produto</button>
+        <button class="btn-admin-action" id="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
+      </div>
+      <button class="btn-admin-action" id="btn-open-login-modal"><i class="fa-solid fa-lock"></i> Acesso ADM</button>
+    </div>
+  </div>
+
+  <!-- BANNER E CABEÇALHO -->
+  <div class="cover-container">
+    <img id="store-cover-img" src="" alt="Capa da Loja" class="cover-image">
+  </div>
+
+  <div class="store-info-card">
+    <button class="btn-edit-store" id="btn-open-store-modal" style="display: none;" title="Editar Loja">
+      <i class="fa-solid fa-pen"></i>
+    </button>
+    <h1 class="store-name" id="store-name-display">Carregando...</h1>
+    <p class="store-desc" id="store-desc-display">Por favor, aguarde o carregamento das informações.</p>
+  </div>
+
+  <!-- CONTAINER PRINCIPAL -->
+  <main class="container">
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input type="text" id="search-input" class="search-input" placeholder="Buscar no cardápio...">
+    </div>
+
+    <div class="categories-bar" id="categories-bar"></div>
+    <div id="products-container"></div>
+  </main>
+
+  <!-- CARRINHO FLUTUANTE -->
+  <div class="cart-footer" id="cart-footer" style="display: none;">
+    <div class="cart-info">
+      <span class="cart-badge" id="cart-count">0</span>
+      <div>
+        <div style="font-size: 0.75rem; color: #ccc;">Total acumulado</div>
+        <div class="cart-total-val" id="cart-total">R$ 0,00</div>
+      </div>
+    </div>
+    <button class="btn-whatsapp" id="btn-finish-order">
+      <i class="fa-brands fa-whatsapp"></i> Finalizar Pedido
+    </button>
+  </div>
+
+  <!-- TOASTS -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- MODAIS -->
+
+  <!-- Modal Login -->
+  <div class="modal-overlay" id="modal-login">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Acesso do Administrador</h3>
+        <button class="btn-close-modal" data-close="modal-login"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="form-login">
+        <div class="form-group">
+          <label class="form-label">E-mail</label>
+          <input type="email" id="login-email" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Senha</label>
+          <input type="password" id="login-password" class="form-control" required>
+        </div>
+        <button type="submit" class="btn-submit">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Editar Loja -->
+  <div class="modal-overlay" id="modal-store">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Configurações da Loja</h3>
+        <button class="btn-close-modal" data-close="modal-store"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="form-store">
+        <div class="form-group">
+          <label class="form-label">Nome do Estabelecimento</label>
+          <input type="text" id="store-name-input" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descrição / Slogan</label>
+          <textarea id="store-desc-input" class="form-control" rows="2" required></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">WhatsApp (com DDD, ex: 5511999999999)</label>
+          <input type="text" id="store-phone-input" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Imagem de Capa (Arquivo)</label>
+          <input type="file" id="store-cover-file" class="form-control" accept="image/*">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ou URL Externa da Capa</label>
+          <input type="url" id="store-cover-url" class="form-control" placeholder="https://...">
+        </div>
+        <button type="submit" class="btn-submit">Salvar Alterações</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Gerenciar Categorias -->
+  <div class="modal-overlay" id="modal-categories">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Gerenciar Categorias</h3>
+        <button class="btn-close-modal" data-close="modal-categories"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="form-add-category" style="display: flex; gap: 8px; margin-bottom: 16px;">
+        <input type="text" id="new-cat-input" class="form-control" placeholder="Nova Categoria" required>
+        <button type="submit" class="btn-submit" style="width: auto; margin:0; white-space: nowrap;">Adicionar</button>
+      </form>
+      <div id="categories-list-manage"></div>
+    </div>
+  </div>
+
+  <!-- Modal Cadastrar/Editar Produto -->
+  <div class="modal-overlay" id="modal-product">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-product-title">Novo Produto</h3>
+        <button class="btn-close-modal" data-close="modal-product"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="form-product">
+        <input type="hidden" id="product-id">
+        <div class="form-group">
+          <label class="form-label">Nome do Produto</label>
+          <input type="text" id="prod-name" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Categoria</label>
+          <select id="prod-category" class="form-control" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Preço (R$)</label>
+          <input type="number" step="0.01" id="prod-price" class="form-control" required placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descrição</label>
+          <textarea id="prod-desc" class="form-control" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Imagem do Produto (Arquivo Local)</label>
+          <input type="file" id="prod-img-file" class="form-control" accept="image/*">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ou URL Externa da Imagem</label>
+          <input type="url" id="prod-img-url" class="form-control" placeholder="https://...">
+        </div>
+        <button type="submit" class="btn-submit">Salvar Produto</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT & INTEGRACAO FIREBASE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { 
-      getFirestore, collection, doc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot 
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { 
       getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { 
+      getFirestore, doc, collection, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { 
       getStorage, ref, uploadBytes, getDownloadURL 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-    // Configurações do Firebase
+    // SUAS CREDENCIAIS FORNECIDAS:
     const firebaseConfig = {
       apiKey: "AIzaSyBAYVAy-f-0ir8ePh7wcKxBKQxBadPDT0o",
       authDomain: "loja-virtual-a71e6.firebaseapp.com",
@@ -367,27 +683,46 @@
       appId: "1:517189427475:web:99c1283482f9aed860fae6"
     };
 
-    // Imagens Padrão Seguras (SVG inline)
-    const DEFAULT_PROD_IMG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><rect width='100%' height='100%' fill='%23e0e0e0'/><text x='50%' y='50%' font-family='Arial' font-size='12' fill='%23888888' dominant-baseline='middle' text-anchor='middle'>Sem+Foto</text></svg>";
-    const DEFAULT_COVER_IMG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='220' viewBox='0 0 800 220'><rect width='100%' height='100%' fill='%231d3557'/><text x='50%' y='50%' font-family='Arial' font-size='24' fill='%23ffffff' dominant-baseline='middle' text-anchor='middle'>Capa+da+Loja</text></svg>";
-
-    // Inicialização dos serviços Firebase
+    // Inicialização
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
     const auth = getAuth(app);
+    const db = getFirestore(app);
     const storage = getStorage(app);
 
-    let isAdmin = false;
-    let currentEditingProductId = null;
-    let storeWhatsAppPhone = "";
+    let currentUser = null;
+    let storeConfig = { name: "Minha Loja Digital", description: "Bem-vindo ao nosso cardápio!", phone: "", coverUrl: "" };
     let categories = [];
     let products = [];
-    let selectedCategoryFilter = "all";
-    let searchQuery = "";
     let cart = [];
+    let selectedCategoryFilter = "Todos";
+    let searchQuery = "";
 
-    // Função para comprimir imagens antes do envio (Reduz uso de Storage e atinge limite de graça)
-    function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.8) {
+    const SVG_FALLBACK = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%23ccc' stroke-width='2'><rect x='3' y='3' width='18' height='18' rx='2'/><circle cx='8.5' cy='8.5' r='1.5'/><polyline points='21 15 16 10 5 21'/></svg>";
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function formatCurrency(val) {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}"></i> ${escapeHtml(message)}`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    function compressImage(file, maxWidth, maxHeight, quality = 0.8) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -398,657 +733,426 @@
             let width = img.width;
             let height = img.height;
 
-            if (width > height) {
-              if (width > maxWidth) {
-                height = Math.round((height * maxWidth) / width);
-                width = maxWidth;
-              }
-            } else {
-              if (height > maxHeight) {
-                width = Math.round((width * maxHeight) / height);
-                height = maxHeight;
-              }
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
             }
 
             const canvas = document.createElement('canvas');
             canvas.width = width;
             canvas.height = height;
-            const ctx = canvas.getContext('canvas');
+            const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
 
-            canvas.toBlob((blob) => {
-              resolve(blob);
-            }, 'image/jpeg', quality);
+            canvas.toBlob(
+              (blob) => {
+                if (blob) resolve(blob);
+                else reject(new Error('Erro ao comprimir imagem'));
+              },
+              'image/jpeg',
+              quality
+            );
           };
-          img.onerror = (error) => reject(error);
+          img.onerror = (err) => reject(err);
         };
-        reader.onerror = (error) => reject(error);
+        reader.onerror = (err) => reject(err);
       });
     }
 
-    // Notificação Toast
-    function showToast(message, type = "success") {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      toast.className = `toast ${type}`;
-      toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
-      container.appendChild(toast);
-      setTimeout(() => toast.remove(), 3500);
-    }
-
-    // 1. CARREGAR CONFIGURAÇÕES DA LOJA
-    const coverImageEl = document.getElementById('cover-image');
-    const storeNameEl = document.getElementById('store-name');
-    const storeDescEl = document.getElementById('store-desc');
-
-    coverImageEl.onerror = () => { coverImageEl.src = DEFAULT_COVER_IMG; };
+    // LISTENERS FIREBASE
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+      updateUIAuthStatus();
+    });
 
     onSnapshot(doc(db, "store_config", "info"), (docSnap) => {
       if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (data.coverUrl) coverImageEl.src = data.coverUrl;
-        if (data.name) storeNameEl.textContent = data.name;
-        if (data.description) storeDescEl.textContent = data.description;
-        if (data.phone) storeWhatsAppPhone = data.phone;
+        storeConfig = docSnap.data();
       }
+      renderStoreInfo();
     });
 
-    // 2. CARREGAR CATEGORIAS
     onSnapshot(doc(db, "categories", "list"), (docSnap) => {
       if (docSnap.exists()) {
         categories = docSnap.data().items || [];
       } else {
-        categories = ["Lanches", "Bebidas", "Sobremesas"];
+        categories = [];
       }
-      renderCategoryPills();
-      updateCategorySelectOptions();
+      renderCategoriesBar();
+      renderCategoryManageList();
+      renderProductSelectCategories();
       renderProducts();
     });
 
-    function renderCategoryPills() {
-      const container = document.getElementById('category-pills');
-      container.innerHTML = `<div class="pill ${selectedCategoryFilter === 'all' ? 'active' : ''}" onclick="filterCategory('all')">Todos</div>`;
-      
-      categories.forEach(cat => {
-        const pill = document.createElement('div');
-        pill.className = `pill ${selectedCategoryFilter === cat ? 'active' : ''}`;
-        pill.textContent = cat;
-        pill.onclick = () => filterCategory(cat);
-        container.appendChild(pill);
-      });
-    }
-
-    window.filterCategory = (cat) => {
-      selectedCategoryFilter = cat;
-      renderCategoryPills();
-      renderProducts();
-    };
-
-    function updateCategorySelectOptions() {
-      const select = document.getElementById('prod-category');
-      select.innerHTML = '<option value="">Sem Categoria</option>';
-      categories.forEach(cat => {
-        select.innerHTML += `<option value="${cat}">${cat}</option>`;
-      });
-    }
-
-    // 3. CARREGAR PRODUTOS EM TEMPO REAL
     onSnapshot(collection(db, "products"), (snapshot) => {
-      products = [];
-      snapshot.forEach((documento) => {
-        products.push({ id: documento.id, ...documento.data() });
-      });
+      products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       renderProducts();
     });
+
+    // RENDERIZACAO DA UI
+    function updateUIAuthStatus() {
+      const statusBadge = document.getElementById('status-badge');
+      const statusText = document.getElementById('status-text');
+      const admButtonsGroup = document.getElementById('adm-buttons-group');
+      const btnOpenLoginModal = document.getElementById('btn-open-login-modal');
+      const btnEditStore = document.getElementById('btn-open-store-modal');
+
+      if (currentUser) {
+        statusBadge.classList.remove('off');
+        statusText.textContent = "Modo Administrador Ativo";
+        admButtonsGroup.style.display = "flex";
+        btnOpenLoginModal.style.display = "none";
+        btnEditStore.style.display = "flex";
+      } else {
+        statusBadge.classList.add('off');
+        statusText.textContent = "Modo Cliente";
+        admButtonsGroup.style.display = "none";
+        btnOpenLoginModal.style.display = "inline-flex";
+        btnEditStore.style.display = "none";
+      }
+      renderProducts();
+    }
+
+    function renderStoreInfo() {
+      document.getElementById('store-name-display').textContent = storeConfig.name || "Minha Loja Digital";
+      document.getElementById('store-desc-display').textContent = storeConfig.description || "";
+      const coverImg = document.getElementById('store-cover-img');
+      coverImg.src = storeConfig.coverUrl || SVG_FALLBACK;
+      coverImg.onerror = () => { coverImg.src = SVG_FALLBACK; };
+    }
+
+    function renderCategoriesBar() {
+      const bar = document.getElementById('categories-bar');
+      const allCat = ["Todos", ...categories];
+      bar.innerHTML = allCat.map(cat => `
+        <button class="cat-pill ${selectedCategoryFilter === cat ? 'active' : ''}" data-cat="${escapeHtml(cat)}">
+          ${escapeHtml(cat)}
+        </button>
+      `).join('');
+
+      bar.querySelectorAll('.cat-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectedCategoryFilter = btn.getAttribute('data-cat');
+          renderCategoriesBar();
+          renderProducts();
+        });
+      });
+    }
+
+    function renderCategoryManageList() {
+      const container = document.getElementById('categories-list-manage');
+      if (categories.length === 0) {
+        container.innerHTML = `<p style="font-size:0.85rem; color:#888;">Nenhuma categoria cadastrada.</p>`;
+        return;
+      }
+      container.innerHTML = categories.map((cat, index) => `
+        <div class="cat-item-row">
+          <span>${escapeHtml(cat)}</span>
+          <button class="btn-adm-icon delete btn-remove-cat" data-index="${index}">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      `).join('');
+
+      container.querySelectorAll('.btn-remove-cat').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const idx = parseInt(btn.getAttribute('data-index'));
+          categories.splice(idx, 1);
+          await setDoc(doc(db, "categories", "list"), { items: categories });
+          showToast("Categoria removida!");
+        });
+      });
+    }
+
+    function renderProductSelectCategories() {
+      const select = document.getElementById('prod-category');
+      select.innerHTML = categories.map(cat => `
+        <option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>
+      `).join('');
+    }
 
     function renderProducts() {
       const container = document.getElementById('products-container');
-      container.innerHTML = "";
-
+      
       let filtered = products.filter(p => {
-        const matchCat = selectedCategoryFilter === 'all' || p.category === selectedCategoryFilter;
-        const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()));
-        return matchCat && matchSearch;
+        const matchesCat = selectedCategoryFilter === "Todos" || p.category === selectedCategoryFilter;
+        const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                              (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()));
+        return matchesCat && matchesSearch;
       });
 
       if (filtered.length === 0) {
-        container.innerHTML = "<p style='text-align:center; padding: 30px; color:#888;'>Nenhum produto encontrado.</p>";
+        container.innerHTML = `<div style="text-align:center; padding: 40px; color: #888;">Nenhum produto encontrado.</div>`;
         return;
       }
 
-      const grouped = {};
-      filtered.forEach(item => {
-        const cat = item.category || "Outros";
-        if (!grouped[cat]) grouped[cat] = [];
-        grouped[cat].push(item);
+      let html = '';
+      if (selectedCategoryFilter === "Todos" && !searchQuery) {
+        const grouped = {};
+        filtered.forEach(p => {
+          const cat = p.category || 'Geral';
+          if (!grouped[cat]) grouped[cat] = [];
+          grouped[cat].push(p);
+        });
+
+        for (const cat in grouped) {
+          html += `<h2 class="category-section-title">${escapeHtml(cat)}</h2>`;
+          html += `<div class="products-grid">${grouped[cat].map(p => createProductCardHTML(p)).join('')}</div>`;
+        }
+      } else {
+        html = `<div class="products-grid" style="margin-top:20px;">${filtered.map(p => createProductCardHTML(p)).join('')}</div>`;
+      }
+
+      container.innerHTML = html;
+      attachProductCardEvents();
+    }
+
+    function createProductCardHTML(product) {
+      const admButtons = currentUser ? `
+        <div class="product-adm-actions">
+          <button class="btn-adm-icon edit btn-edit-prod" data-id="${product.id}"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn-adm-icon delete btn-delete-prod" data-id="${product.id}"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      ` : '';
+
+      return `
+        <div class="product-card">
+          <div class="product-img-wrapper">
+            <img src="${escapeHtml(product.imageUrl) || SVG_FALLBACK}" class="product-img" onerror="this.src='${SVG_FALLBACK}'" alt="${escapeHtml(product.name)}">
+            ${admButtons}
+          </div>
+          <div class="product-details">
+            <h3 class="product-title">${escapeHtml(product.name)}</h3>
+            <p class="product-desc">${escapeHtml(product.description || '')}</p>
+            <div class="product-bottom">
+              <span class="product-price">${formatCurrency(product.price)}</span>
+              <button class="btn-add-cart" data-id="${product.id}">
+                <i class="fa-solid fa-cart-plus"></i> Adicionar
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function attachProductCardEvents() {
+      document.querySelectorAll('.btn-add-cart').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          const prod = products.find(p => p.id === id);
+          if (prod) addToCart(prod);
+        });
       });
 
-      for (const [catName, items] of Object.entries(grouped)) {
-        if (selectedCategoryFilter === 'all') {
-          const catHeader = document.createElement('h3');
-          catHeader.className = 'section-title';
-          catHeader.textContent = catName;
-          container.appendChild(catHeader);
-        }
+      if (currentUser) {
+        document.querySelectorAll('.btn-edit-prod').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id');
+            const prod = products.find(p => p.id === id);
+            if (prod) openEditProductModal(prod);
+          });
+        });
 
-        items.forEach(item => {
-          const card = document.createElement('div');
-          card.className = 'product-card';
-          
-          const imgSrc = (item.imageUrl && item.imageUrl.trim() !== '') ? item.imageUrl : DEFAULT_PROD_IMG;
-
-          card.innerHTML = `
-            <div class="product-img-container">
-              <img src="${imgSrc}" class="product-img" alt="${escapeHtml(item.name || '')}" onerror="this.onerror=null; this.src='${DEFAULT_PROD_IMG}';">
-            </div>
-            <div class="product-details">
-              <div>
-                <div class="product-title">${escapeHtml(item.name || '')}</div>
-                <div class="product-desc">${escapeHtml(item.description || '')}</div>
-              </div>
-              <div class="product-bottom-row">
-                <div class="product-price">R$ ${parseFloat(item.price || 0).toFixed(2).replace('.', ',')}</div>
-                <button class="add-to-cart-btn btn-add-cart">
-                  <i class="fa-solid fa-cart-plus"></i> Adicionar
-                </button>
-              </div>
-              <div class="product-actions" style="display: ${isAdmin ? 'flex' : 'none'};">
-                <button class="btn btn-secondary btn-edit-prod">
-                  <i class="fa-solid fa-pen"></i> Editar
-                </button>
-                <button class="btn btn-danger btn-delete-prod">
-                  <i class="fa-solid fa-trash"></i> Excluir
-                </button>
-              </div>
-            </div>
-          `;
-
-          card.querySelector('.btn-add-cart').addEventListener('click', () => addToCart(item));
-
-          const btnEdit = card.querySelector('.btn-edit-prod');
-          const btnDelete = card.querySelector('.btn-delete-prod');
-
-          if (btnEdit) {
-            btnEdit.addEventListener('click', () => {
-              editProduct(item.id, item.name, item.description || '', item.price, item.category || '', item.imageUrl || '');
-            });
-          }
-
-          if (btnDelete) {
-            btnDelete.addEventListener('click', () => deleteProduct(item.id));
-          }
-
-          container.appendChild(card);
+        document.querySelectorAll('.btn-delete-prod').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.getAttribute('data-id');
+            if (confirm("Tem certeza que deseja excluir este produto?")) {
+              await deleteDoc(doc(db, "products", id));
+              showToast("Produto excluído com sucesso!");
+            }
+          });
         });
       }
     }
 
+    // CARRINHO & WHATSAPP
+    function addToCart(product) {
+      const existing = cart.find(item => item.id === product.id);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        cart.push({ ...product, quantity: 1 });
+      }
+      updateCartUI();
+      showToast(`${product.name} adicionado ao carrinho!`);
+    }
+
+    function updateCartUI() {
+      const cartFooter = document.getElementById('cart-footer');
+      const cartCount = document.getElementById('cart-count');
+      const cartTotal = document.getElementById('cart-total');
+
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+      const totalValue = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+      if (totalItems > 0) {
+        cartFooter.style.display = 'flex';
+        cartCount.textContent = totalItems;
+        cartTotal.textContent = formatCurrency(totalValue);
+      } else {
+        cartFooter.style.display = 'none';
+      }
+    }
+
+    document.getElementById('btn-finish-order').addEventListener('click', () => {
+      if (cart.length === 0) return;
+
+      if (!storeConfig.phone) {
+        alert("O número de WhatsApp do estabelecimento não está configurado.");
+        return;
+      }
+
+      let message = `*Novo Pedido - ${storeConfig.name}*\n\n`;
+      let total = 0;
+
+      cart.forEach(item => {
+        const subtotal = item.price * item.quantity;
+        total += subtotal;
+        message += `• ${item.quantity}x ${item.name} - ${formatCurrency(subtotal)}\n`;
+      });
+
+      message += `\n*Total:* ${formatCurrency(total)}`;
+
+      const phone = storeConfig.phone.replace(/\D/g, '');
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodedMessage}`;
+
+      window.open(whatsappUrl, '_blank');
+    });
+
+    // EVENTOS DOS MODAIS
     document.getElementById('search-input').addEventListener('input', (e) => {
       searchQuery = e.target.value;
       renderProducts();
     });
 
-    function escapeHtml(text) {
-      return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-    // 4. AUTENTICAÇÃO E PERMISSÕES
-    onAuthStateChanged(auth, (user) => {
-      isAdmin = !!user;
-      document.getElementById('admin-status').textContent = isAdmin ? "Modo Administrador Ativo" : "Modo Cliente";
-      document.getElementById('btn-login-modal').style.display = isAdmin ? "none" : "inline-flex";
-      document.getElementById('btn-logout').style.display = isAdmin ? "inline-flex" : "none";
-      document.getElementById('btn-add-product').style.display = isAdmin ? "inline-flex" : "none";
-      document.getElementById('btn-manage-cat').style.display = isAdmin ? "inline-flex" : "none";
-      document.getElementById('btn-edit-store').style.display = isAdmin ? "inline-flex" : "none";
-
-      document.querySelectorAll('.product-actions').forEach(el => {
-        el.style.display = isAdmin ? 'flex' : 'none';
-      });
+    document.querySelectorAll('[data-close]').forEach(btn => {
+      btn.addEventListener('click', () => closeModal(btn.getAttribute('data-close')));
     });
 
-    // 5. GERENCIAMENTO DE CATEGORIAS
-    document.getElementById('category-form').addEventListener('submit', async (e) => {
+    document.getElementById('btn-open-login-modal').addEventListener('click', () => openModal('modal-login'));
+    document.getElementById('btn-open-cat-modal').addEventListener('click', () => openModal('modal-categories'));
+    document.getElementById('btn-open-store-modal').addEventListener('click', () => {
+      document.getElementById('store-name-input').value = storeConfig.name || '';
+      document.getElementById('store-desc-input').value = storeConfig.description || '';
+      document.getElementById('store-phone-input').value = storeConfig.phone || '';
+      document.getElementById('store-cover-url').value = storeConfig.coverUrl || '';
+      openModal('modal-store');
+    });
+
+    document.getElementById('btn-open-prod-modal').addEventListener('click', () => {
+      document.getElementById('form-product').reset();
+      document.getElementById('product-id').value = '';
+      document.getElementById('modal-product-title').textContent = "Novo Produto";
+      openModal('modal-product');
+    });
+
+    function openEditProductModal(product) {
+      document.getElementById('product-id').value = product.id;
+      document.getElementById('prod-name').value = product.name;
+      document.getElementById('prod-category').value = product.category;
+      document.getElementById('prod-price').value = product.price;
+      document.getElementById('prod-desc').value = product.description || '';
+      document.getElementById('prod-img-url').value = product.imageUrl || '';
+      document.getElementById('modal-product-title').textContent = "Editar Produto";
+      openModal('modal-product');
+    }
+
+    // FORMULÁRIOS
+    document.getElementById('form-login').addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (!isAdmin) return;
-
-      const newCat = document.getElementById('new-cat-name').value.trim();
-      if (!newCat) return;
-
-      if (!categories.includes(newCat)) {
-        categories.push(newCat);
-        await setDoc(doc(db, "categories", "list"), { items: categories });
-        showToast("Categoria adicionada!");
-        document.getElementById('new-cat-name').value = "";
-        renderCategoryManagementList();
-      } else {
-        showToast("Esta categoria já existe.", "error");
+      const email = document.getElementById('login-email').value;
+      const pass = document.getElementById('login-password').value;
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+        closeModal('modal-login');
+        showToast("Login realizado com sucesso!");
+      } catch (err) {
+        showToast("Erro ao realizar login: " + err.message, 'error');
       }
     });
 
-    function renderCategoryManagementList() {
-      const listContainer = document.getElementById('categories-list-manage');
-      listContainer.innerHTML = "";
-      categories.forEach((cat, index) => {
-        const row = document.createElement('div');
-        row.className = 'category-item-row';
-        row.innerHTML = `
-          <span>${cat}</span>
-          <button class="btn btn-danger" style="padding: 2px 8px;" onclick="removeCategory(${index})">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        `;
-        listContainer.appendChild(row);
-      });
-    }
+    document.getElementById('btn-logout').addEventListener('click', async () => {
+      await signOut(auth);
+      showToast("Sessão encerrada.");
+    });
 
-    window.removeCategory = async (index) => {
-      if (!isAdmin) return;
-      categories.splice(index, 1);
-      await setDoc(doc(db, "categories", "list"), { items: categories });
-      showToast("Categoria removida.");
-      renderCategoryManagementList();
-    };
-
-    // 6. EDITAR DADOS DA LOJA (COM UPLOAD DE CAPA PARA O STORAGE)
-    document.getElementById('store-form').addEventListener('submit', async (e) => {
+    document.getElementById('form-add-category').addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (!isAdmin) return;
+      const input = document.getElementById('new-cat-input');
+      const val = input.value.trim();
+      if (val && !categories.includes(val)) {
+        categories.push(val);
+        await setDoc(doc(db, "categories", "list"), { items: categories });
+        input.value = '';
+        showToast("Categoria adicionada!");
+      }
+    });
 
-      const submitBtn = e.target.querySelector('button[type="submit"]');
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
-
+    document.getElementById('form-store').addEventListener('submit', async (e) => {
+      e.preventDefault();
       const name = document.getElementById('store-name-input').value;
       const description = document.getElementById('store-desc-input').value;
-      const phone = document.getElementById('store-phone-input').value.replace(/\D/g, '');
-      const coverUrlInput = document.getElementById('store-cover-input').value.trim();
-      const coverFileInput = document.getElementById('store-cover-file').files[0];
-
-      let coverUrl = coverUrlInput;
+      const phone = document.getElementById('store-phone-input').value;
+      const fileInput = document.getElementById('store-cover-file');
+      let coverUrl = document.getElementById('store-cover-url').value;
 
       try {
-        // Se selecionou arquivo local, faz upload comprimido para o Storage
-        if (coverFileInput) {
-          const compressed = await compressImage(coverFileInput, 1200, 600, 0.85);
+        if (fileInput.files.length > 0) {
+          const compressedBlob = await compressImage(fileInput.files[0], 1200, 600, 0.8);
           const storageRef = ref(storage, `store/cover_${Date.now()}.jpg`);
-          const snapshot = await uploadBytes(storageRef, compressed);
-          coverUrl = await getDownloadURL(snapshot.ref);
+          await uploadBytes(storageRef, compressedBlob);
+          coverUrl = await getDownloadURL(storageRef);
         }
 
-        await setDoc(doc(db, "store_config", "info"), { name, description, phone, coverUrl }, { merge: true });
-        showToast("Informações da loja atualizadas!");
-        closeStoreModal();
+        await setDoc(doc(db, "store_config", "info"), { name, description, phone, coverUrl });
+        closeModal('modal-store');
+        showToast("Configurações salvas com sucesso!");
       } catch (err) {
-        console.error(err);
-        showToast("Erro ao salvar informações.", "error");
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = "Salvar Alterações";
+        showToast("Erro ao salvar loja: " + err.message, 'error');
       }
     });
 
-    // 7. SALVAR / EDITAR PRODUTO (SUPORTA ARQUIVO OU URL)
-    document.getElementById('product-form').addEventListener('submit', async (e) => {
+    document.getElementById('form-product').addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (!isAdmin) return;
-
-      const submitBtn = e.target.querySelector('button[type="submit"]');
-      const originalBtnText = submitBtn.innerHTML;
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
-
+      const id = document.getElementById('product-id').value;
       const name = document.getElementById('prod-name').value;
-      const description = document.getElementById('prod-desc').value;
       const category = document.getElementById('prod-category').value;
-      const imageUrlInput = document.getElementById('prod-image-url').value.trim();
-      const imageFileInput = document.getElementById('prod-image-file').files[0];
-      
-      const rawPrice = document.getElementById('prod-price').value.toString().replace(',', '.');
-      const price = parseFloat(rawPrice) || 0;
-
-      let imageUrl = imageUrlInput;
+      const price = parseFloat(document.getElementById('prod-price').value);
+      const description = document.getElementById('prod-desc').value;
+      const fileInput = document.getElementById('prod-img-file');
+      let imageUrl = document.getElementById('prod-img-url').value;
 
       try {
-        // Se selecionou arquivo local, envia para o Firebase Storage de forma comprimida
-        if (imageFileInput) {
-          const compressed = await compressImage(imageFileInput, 800, 800, 0.8);
-          const storageRef = ref(storage, `products/${Date.now()}_${imageFileInput.name}`);
-          const snapshot = await uploadBytes(storageRef, compressed);
-          imageUrl = await getDownloadURL(snapshot.ref);
+        if (fileInput.files.length > 0) {
+          const compressedBlob = await compressImage(fileInput.files[0], 800, 800, 0.8);
+          const storageRef = ref(storage, `products/prod_${Date.now()}.jpg`);
+          await uploadBytes(storageRef, compressedBlob);
+          imageUrl = await getDownloadURL(storageRef);
         }
 
-        const productData = { name, description, price, category, imageUrl };
+        const productData = { name, category, price, description, imageUrl };
 
-        if (currentEditingProductId) {
-          await updateDoc(doc(db, "products", currentEditingProductId), productData);
+        if (id) {
+          await updateDoc(doc(db, "products", id), productData);
           showToast("Produto atualizado!");
         } else {
           await addDoc(collection(db, "products"), productData);
           showToast("Produto cadastrado!");
         }
 
-        closeProductModal();
+        closeModal('modal-product');
       } catch (err) {
-        console.error(err);
-        showToast("Erro ao salvar o produto.", "error");
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalBtnText;
+        showToast("Erro ao salvar produto: " + err.message, 'error');
       }
-    });
-
-    // 8. CARRINHO DE COMPRAS E PEDIDO WHATSAPP
-    function addToCart(product) {
-      cart.push(product);
-      updateCartUI();
-      showToast(`${product.name} adicionado ao carrinho!`);
-    }
-
-    function updateCartUI() {
-      const cartBar = document.getElementById('cart-bar');
-      const cartCount = document.getElementById('cart-count');
-      const cartTotal = document.getElementById('cart-total');
-
-      if (cart.length === 0) {
-        cartBar.style.display = 'none';
-        return;
-      }
-
-      cartBar.style.display = 'flex';
-      cartCount.textContent = `${cart.length} item(ns)`;
-      
-      const total = cart.reduce((acc, item) => acc + parseFloat(item.price || 0), 0);
-      cartTotal.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
-    }
-
-    window.sendOrderWhatsApp = () => {
-      if (!storeWhatsAppPhone) {
-        showToast("Telefone do estabelecimento não configurado pelo ADM.", "error");
-        return;
-      }
-
-      let message = "*Novo Pedido via Cardápio Digital*\n\n";
-      let total = 0;
-
-      cart.forEach((item, index) => {
-        message += `${index + 1}. ${item.name} - R$ ${parseFloat(item.price).toFixed(2).replace('.', ',')}\n`;
-        total += parseFloat(item.price);
-      });
-
-      message += `\n*Total:* R$ ${total.toFixed(2).replace('.', ',')}`;
-
-      const url = `https://api.whatsapp.com/send?phone=${storeWhatsAppPhone}&text=${encodeURIComponent(message)}`;
-      window.open(url, '_blank');
-    };
-
-    // Métodos Globais para Modais
-    window.openLoginModal = () => document.getElementById('modal-login').style.display = 'flex';
-    window.closeLoginModal = () => document.getElementById('modal-login').style.display = 'none';
-
-    window.openStoreModal = () => {
-      document.getElementById('store-name-input').value = storeNameEl.textContent;
-      document.getElementById('store-desc-input').value = storeDescEl.textContent;
-      document.getElementById('store-phone-input').value = storeWhatsAppPhone;
-      document.getElementById('store-cover-input').value = coverImageEl.src.startsWith('data:') ? '' : coverImageEl.src;
-      document.getElementById('store-cover-file').value = "";
-      document.getElementById('modal-store').style.display = 'flex';
-    };
-    window.closeStoreModal = () => document.getElementById('modal-store').style.display = 'none';
-
-    window.openCategoryModal = () => {
-      renderCategoryManagementList();
-      document.getElementById('modal-categories').style.display = 'flex';
-    };
-    window.closeCategoryModal = () => document.getElementById('modal-categories').style.display = 'none';
-
-    window.loginAdmin = async () => {
-      const email = document.getElementById('login-email').value;
-      const pass = document.getElementById('login-pass').value;
-      try {
-        await signInWithEmailAndPassword(auth, email, pass);
-        closeLoginModal();
-        showToast("Login efetuado com sucesso!");
-      } catch (err) {
-        showToast("Erro na autenticação: " + err.message, "error");
-      }
-    };
-
-    window.logoutAdmin = () => {
-      signOut(auth);
-      showToast("Sessão encerrada.");
-    };
-
-    window.openProductModal = () => {
-      currentEditingProductId = null;
-      document.getElementById('product-form').reset();
-      document.getElementById('modal-product-title').textContent = "Adicionar Produto";
-      document.getElementById('modal-product').style.display = 'flex';
-    };
-
-    window.closeProductModal = () => document.getElementById('modal-product').style.display = 'none';
-
-    window.editProduct = (id, name, description, price, category, imageUrl) => {
-      currentEditingProductId = id;
-      document.getElementById('prod-name').value = name;
-      document.getElementById('prod-desc').value = description;
-      document.getElementById('prod-price').value = price;
-      document.getElementById('prod-category').value = category || '';
-      document.getElementById('prod-image-url').value = imageUrl || '';
-      document.getElementById('prod-image-file').value = "";
-      document.getElementById('modal-product-title').textContent = "Editar Produto";
-      document.getElementById('modal-product').style.display = 'flex';
-    };
-
-    window.deleteProduct = async (id) => {
-      if (!isAdmin) return;
-      if (confirm("Deseja realmente excluir este produto?")) {
-        try {
-          await deleteDoc(doc(db, "products", id));
-          showToast("Produto excluído.");
-        } catch (err) {
-          showToast("Erro ao excluir produto.", "error");
-        }
-      }
-    };
-
-    // Fechar modais ao clicar no fundo
-    document.querySelectorAll('.modal-backdrop').forEach(modal => {
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.style.display = 'none';
-      });
     });
   </script>
-</head>
-<body>
-
-  <!-- Notificações Toast -->
-  <div id="toast-container"></div>
-
-  <!-- Barra do Administrador -->
-  <div class="admin-bar">
-    <span id="admin-status">Modo Cliente</span>
-    <div class="admin-controls">
-      <button id="btn-manage-cat" class="btn btn-secondary" style="display:none;" onclick="openCategoryModal()">
-        <i class="fa-solid fa-list"></i> Categorias
-      </button>
-      <button id="btn-add-product" class="btn btn-success" style="display:none;" onclick="openProductModal()">
-        <i class="fa-solid fa-plus"></i> Novo Produto
-      </button>
-      <button id="btn-login-modal" class="btn btn-secondary" onclick="openLoginModal()">
-        <i class="fa-solid fa-user-lock"></i> Acesso ADM
-      </button>
-      <button id="btn-logout" class="btn btn-danger" style="display:none;" onclick="logoutAdmin()">
-        <i class="fa-solid fa-right-from-bracket"></i> Sair
-      </button>
-    </div>
-  </div>
-
-  <!-- Banner de Capa -->
-  <div class="cover-container">
-    <img id="cover-image" src="" class="cover-img" alt="Capa da Loja" />
-  </div>
-
-  <!-- Nome e Descrição da Loja -->
-  <div class="header-info">
-    <h1 id="store-name">Minha Loja Virtual</h1>
-    <p id="store-desc">Confira nossos produtos abaixo!</p>
-    <button id="btn-edit-store" class="btn btn-secondary edit-store-btn" onclick="openStoreModal()">
-      <i class="fa-solid fa-pen"></i> Editar Dados da Loja / Capa
-    </button>
-  </div>
-
-  <!-- Lista de Produtos e Pesquisa -->
-  <div class="container">
-    <div class="search-box">
-      <input type="text" id="search-input" placeholder="🔍 Pesquisar no cardápio..." />
-    </div>
-
-    <!-- Filtro de Categorias em Pills -->
-    <div class="category-pills" id="category-pills">
-      <!-- Injetado via JS -->
-    </div>
-
-    <div id="products-container">
-      <!-- Lista gerenciada dinamicamente pelo Firebase -->
-    </div>
-  </div>
-
-  <!-- Carrinho Fixo Inferior para WhatsApp -->
-  <div class="cart-bar" id="cart-bar" style="display: none;">
-    <div class="cart-info">
-      <span id="cart-count">0 itens</span> | <strong id="cart-total">R$ 0,00</strong>
-    </div>
-    <button class="btn btn-success" onclick="sendOrderWhatsApp()">
-      <i class="fa-brands fa-whatsapp"></i> Finalizar Pedido
-    </button>
-  </div>
-
-  <!-- MODAL LOGIN (ADM) -->
-  <div id="modal-login" class="modal-backdrop">
-    <div class="modal-content">
-      <div class="modal-header">Acesso do Administrador</div>
-      <div class="form-group">
-        <label for="login-email">E-mail</label>
-        <input type="email" id="login-email" placeholder="admin@email.com" />
-      </div>
-      <div class="form-group">
-        <label for="login-pass">Senha</label>
-        <input type="password" id="login-pass" placeholder="******" />
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" onclick="closeLoginModal()">Cancelar</button>
-        <button type="button" class="btn btn-primary" onclick="loginAdmin()">Entrar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL GERENCIAR CATEGORIAS (ADM) -->
-  <div id="modal-categories" class="modal-backdrop">
-    <div class="modal-content">
-      <div class="modal-header">Gerenciar Categorias</div>
-      <form id="category-form">
-        <div class="form-group">
-          <label for="new-cat-name">Nova Categoria</label>
-          <div style="display: flex; gap: 5px;">
-            <input type="text" id="new-cat-name" placeholder="Ex: Bebidas, Promoções" required />
-            <button type="submit" class="btn btn-success"><i class="fa-solid fa-plus"></i></button>
-          </div>
-        </div>
-      </form>
-      <hr style="margin: 15px 0;" />
-      <div id="categories-list-manage">
-        <!-- Lista de categorias para exclusão -->
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" onclick="closeCategoryModal()">Fechar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL EDITAR DADOS DA LOJA (ADM) -->
-  <div id="modal-store" class="modal-backdrop">
-    <div class="modal-content">
-      <div class="modal-header">Editar Dados da Loja</div>
-      <form id="store-form">
-        <div class="form-group">
-          <label for="store-name-input">Nome da Loja</label>
-          <input type="text" id="store-name-input" required />
-        </div>
-        <div class="form-group">
-          <label for="store-desc-input">Descrição / Slogan</label>
-          <textarea id="store-desc-input" rows="2"></textarea>
-        </div>
-        <div class="form-group">
-          <label for="store-phone-input">WhatsApp para Pedidos (com DDD)</label>
-          <input type="text" id="store-phone-input" placeholder="Ex: 51999999999" />
-        </div>
-        <div class="form-group">
-          <label for="store-cover-file">Enviar Foto de Capa (Upload Firebase Storage)</label>
-          <input type="file" id="store-cover-file" accept="image/*" />
-        </div>
-        <div class="form-group">
-          <label for="store-cover-input">Ou Cole o Link da Capa (URL)</label>
-          <input type="url" id="store-cover-input" placeholder="https://i.imgur.com/sua-capa.jpg" />
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="closeStoreModal()">Cancelar</button>
-          <button type="submit" class="btn btn-success">Salvar Alterações</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL ADICIONAR/EDITAR PRODUTO (ADM) -->
-  <div id="modal-product" class="modal-backdrop">
-    <div class="modal-content">
-      <div class="modal-header" id="modal-product-title">Adicionar Produto</div>
-      <form id="product-form">
-        <div class="form-group">
-          <label for="prod-name">Nome do Produto</label>
-          <input type="text" id="prod-name" required placeholder="Ex: Hambúrguer" />
-        </div>
-
-        <div class="form-group">
-          <label for="prod-category">Categoria</label>
-          <select id="prod-category">
-            <!-- Opções Dinâmicas -->
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label for="prod-desc">Descrição</label>
-          <textarea id="prod-desc" rows="3" placeholder="Ingredientes e detalhes..."></textarea>
-        </div>
-
-        <div class="form-group">
-          <label for="prod-price">Preço (R$)</label>
-          <input type="text" id="prod-price" required placeholder="25,00" />
-        </div>
-
-        <div class="form-group">
-          <label for="prod-image-file">Enviar Foto do Dispositivo (Upload Grátis Firebase)</label>
-          <input type="file" id="prod-image-file" accept="image/*" />
-        </div>
-
-        <div class="form-group">
-          <label for="prod-image-url">Ou Cole o Link Direto da Imagem (URL)</label>
-          <input type="url" id="prod-image-url" placeholder="https://i.imgur.com/sua-imagem.jpg" />
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="closeProductModal()">Cancelar</button>
-          <button type="submit" class="btn btn-success">Salvar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
 </body>
 </html>
