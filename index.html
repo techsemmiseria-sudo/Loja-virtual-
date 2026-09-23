@@ -364,7 +364,7 @@
       appId: "1:517189427475:web:99c1283482f9aed860fae6"
     };
 
-    // Imagens de Fallback embutidas (SVG puro, não dependem de servidor externo)
+    // Imagens de Fallback embutidas
     const DEFAULT_PROD_IMG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><rect width='100%' height='100%' fill='%23e0e0e0'/><text x='50%' y='50%' font-family='Arial' font-size='12' fill='%23888888' dominant-baseline='middle' text-anchor='middle'>Sem+Foto</text></svg>";
     const DEFAULT_COVER_IMG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='220' viewBox='0 0 800 220'><rect width='100%' height='100%' fill='%231d3557'/><text x='50%' y='50%' font-family='Arial' font-size='24' fill='%23ffffff' dominant-baseline='middle' text-anchor='middle'>Capa+da+Loja</text></svg>";
 
@@ -397,7 +397,6 @@
     const storeNameEl = document.getElementById('store-name');
     const storeDescEl = document.getElementById('store-desc');
 
-    // Tratar erro na capa da loja
     coverImageEl.onerror = () => { coverImageEl.src = DEFAULT_COVER_IMG; };
 
     onSnapshot(doc(db, "store_config", "info"), (docSnap) => {
@@ -464,7 +463,7 @@
 
       let filtered = products.filter(p => {
         const matchCat = selectedCategoryFilter === 'all' || p.category === selectedCategoryFilter;
-        const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        const matchSearch = (p.name && p.name.toLowerCase().includes(searchQuery.toLowerCase())) || 
                             (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()));
         return matchCat && matchSearch;
       });
@@ -528,7 +527,7 @@
 
           if (btnEdit) {
             btnEdit.addEventListener('click', () => {
-              editProduct(item.id, item.name, item.description || '', item.price, item.category || '', item.imageUrl || '');
+              window.editProduct(item.id, item.name, item.description || '', item.price, item.category || '', item.imageUrl || '');
             });
           }
 
@@ -547,7 +546,7 @@
     });
 
     function escapeHtml(text) {
-      return text
+      return String(text || '')
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -596,7 +595,7 @@
         const row = document.createElement('div');
         row.className = 'category-item-row';
         row.innerHTML = `
-          <span>${cat}</span>
+          <span>${escapeHtml(cat)}</span>
           <button class="btn btn-danger" style="padding: 2px 8px;" onclick="removeCategory(${index})">
             <i class="fa-solid fa-trash"></i>
           </button>
@@ -626,7 +625,7 @@
       try {
         await setDoc(doc(db, "store_config", "info"), { name, description, phone, coverUrl }, { merge: true });
         showToast("Informações da loja atualizadas!");
-        closeStoreModal();
+        window.closeStoreModal();
       } catch (err) {
         console.error(err);
         showToast("Erro ao salvar informações.", "error");
@@ -662,7 +661,7 @@
           showToast("Produto cadastrado!");
         }
 
-        closeProductModal();
+        window.closeProductModal();
       } catch (err) {
         console.error(err);
         showToast("Erro ao salvar o produto.", "error");
@@ -716,7 +715,7 @@
       window.open(url, '_blank');
     };
 
-    // Métodos Globais para Modais
+    // Exportação de Métodos para o escopo Global (window)
     window.openLoginModal = () => document.getElementById('modal-login').style.display = 'flex';
     window.closeLoginModal = () => document.getElementById('modal-login').style.display = 'none';
 
@@ -740,7 +739,7 @@
       const pass = document.getElementById('login-pass').value;
       try {
         await signInWithEmailAndPassword(auth, email, pass);
-        closeLoginModal();
+        window.closeLoginModal();
         showToast("Login efetuado com sucesso!");
       } catch (err) {
         showToast("Erro na autenticação: " + err.message, "error");
@@ -784,7 +783,7 @@
       }
     };
 
-    // Fechar modais ao clicar no fundo
+    // Fechar modais ao clicar fora da caixa do modal
     document.querySelectorAll('.modal-backdrop').forEach(modal => {
       modal.addEventListener('click', (e) => {
         if (e.target === modal) modal.style.display = 'none';
