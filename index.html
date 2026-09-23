@@ -364,6 +364,10 @@
       appId: "1:517189427475:web:99c1283482f9aed860fae6"
     };
 
+    // Imagens de Fallback embutidas (SVG puro, não dependem de servidor externo)
+    const DEFAULT_PROD_IMG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><rect width='100%' height='100%' fill='%23e0e0e0'/><text x='50%' y='50%' font-family='Arial' font-size='12' fill='%23888888' dominant-baseline='middle' text-anchor='middle'>Sem+Foto</text></svg>";
+    const DEFAULT_COVER_IMG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='220' viewBox='0 0 800 220'><rect width='100%' height='100%' fill='%231d3557'/><text x='50%' y='50%' font-family='Arial' font-size='24' fill='%23ffffff' dominant-baseline='middle' text-anchor='middle'>Capa+da+Loja</text></svg>";
+
     // Inicialização do Firestore e Auth
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -392,6 +396,9 @@
     const coverImageEl = document.getElementById('cover-image');
     const storeNameEl = document.getElementById('store-name');
     const storeDescEl = document.getElementById('store-desc');
+
+    // Tratar erro na capa da loja
+    coverImageEl.onerror = () => { coverImageEl.src = DEFAULT_COVER_IMG; };
 
     onSnapshot(doc(db, "store_config", "info"), (docSnap) => {
       if (docSnap.exists()) {
@@ -485,9 +492,12 @@
         items.forEach(item => {
           const card = document.createElement('div');
           card.className = 'product-card';
+          
+          const imgSrc = (item.imageUrl && item.imageUrl.trim() !== '') ? item.imageUrl : DEFAULT_PROD_IMG;
+
           card.innerHTML = `
             <div class="product-img-container">
-              <img src="${item.imageUrl || 'https://via.placeholder.com/120?text=Sem+Foto'}" class="product-img" alt="${escapeHtml(item.name || '')}">
+              <img src="${imgSrc}" class="product-img" alt="${escapeHtml(item.name || '')}" onerror="this.onerror=null; this.src='${DEFAULT_PROD_IMG}';">
             </div>
             <div class="product-details">
               <div>
@@ -603,7 +613,7 @@
       renderCategoryManagementList();
     };
 
-    // 6. EDITAR DADOS DA LOJA (INCLUINDO LINK DA CAPA)
+    // 6. EDITAR DADOS DA LOJA
     document.getElementById('store-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!isAdmin) return;
@@ -714,7 +724,7 @@
       document.getElementById('store-name-input').value = storeNameEl.textContent;
       document.getElementById('store-desc-input').value = storeDescEl.textContent;
       document.getElementById('store-phone-input').value = storeWhatsAppPhone;
-      document.getElementById('store-cover-input').value = coverImageEl.src;
+      document.getElementById('store-cover-input').value = coverImageEl.src.startsWith('data:') ? '' : coverImageEl.src;
       document.getElementById('modal-store').style.display = 'flex';
     };
     window.closeStoreModal = () => document.getElementById('modal-store').style.display = 'none';
@@ -808,7 +818,7 @@
 
   <!-- Banner de Capa -->
   <div class="cover-container">
-    <img id="cover-image" src="https://via.placeholder.com/800x220?text=Capa+da+Loja" class="cover-img" alt="Capa" />
+    <img id="cover-image" src="" class="cover-img" alt="Capa da Loja" />
   </div>
 
   <!-- Nome e Descrição da Loja -->
@@ -906,8 +916,8 @@
           <input type="text" id="store-phone-input" placeholder="Ex: 51999999999" />
         </div>
         <div class="form-group">
-          <label for="store-cover-input">Link da Imagem da Capa (URL)</label>
-          <input type="url" id="store-cover-input" placeholder="https://imgur.com/sua-capa.jpg" />
+          <label for="store-cover-input">Link da Imagem da Capa (URL direta: .jpg ou .png)</label>
+          <input type="url" id="store-cover-input" placeholder="https://i.imgur.com/sua-capa.jpg" />
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" onclick="closeStoreModal()">Cancelar</button>
@@ -945,8 +955,8 @@
         </div>
 
         <div class="form-group">
-          <label for="prod-image-url">Link da Imagem (URL)</label>
-          <input type="url" id="prod-image-url" placeholder="https://imgur.com/sua-imagem.jpg" />
+          <label for="prod-image-url">Link Direto da Imagem (URL terminada em .jpg ou .png)</label>
+          <input type="url" id="prod-image-url" placeholder="https://i.imgur.com/sua-imagem.jpg" />
         </div>
 
         <div class="modal-footer">
