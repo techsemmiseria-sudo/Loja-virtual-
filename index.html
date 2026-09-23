@@ -480,6 +480,7 @@
       transition: var(--transition);
     }
     .btn-submit:hover { background: var(--primary-hover); }
+    .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
 
     .cat-item-row {
       display: flex;
@@ -569,7 +570,7 @@
           <label class="form-label">Senha</label>
           <input type="password" id="login-password" class="form-control" required>
         </div>
-        <button type="submit" class="btn-submit">Entrar</button>
+        <button type="submit" class="btn-submit" id="btn-submit-login">Entrar</button>
       </form>
     </div>
   </div>
@@ -591,7 +592,7 @@
           <textarea id="store-desc-input" class="form-control" rows="2" required></textarea>
         </div>
         <div class="form-group">
-          <label class="form-label">WhatsApp (com DDD, ex: 5511999999999)</label>
+          <label class="form-label">WhatsApp (com DDD e DDI, ex: 5511999999999)</label>
           <input type="text" id="store-phone-input" class="form-control" required>
         </div>
         <div class="form-group">
@@ -602,7 +603,7 @@
           <label class="form-label">Ou URL Externa da Capa</label>
           <input type="url" id="store-cover-url" class="form-control" placeholder="https://...">
         </div>
-        <button type="submit" class="btn-submit">Salvar Alterações</button>
+        <button type="submit" class="btn-submit" id="btn-submit-store">Salvar Alterações</button>
       </form>
     </div>
   </div>
@@ -655,7 +656,7 @@
           <label class="form-label">Ou URL Externa da Imagem</label>
           <input type="url" id="prod-img-url" class="form-control" placeholder="https://...">
         </div>
-        <button type="submit" class="btn-submit">Salvar Produto</button>
+        <button type="submit" class="btn-submit" id="btn-submit-product">Salvar Produto</button>
       </form>
     </div>
   </div>
@@ -821,8 +822,7 @@
       document.getElementById('store-name-display').textContent = storeConfig.name || "Minha Loja Digital";
       document.getElementById('store-desc-display').textContent = storeConfig.description || "";
       const coverImg = document.getElementById('store-cover-img');
-      coverImg.src = storeConfig.coverUrl || SVG_FALLBACK;
-      coverImg.onerror = () => { coverImg.src = SVG_FALLBACK; };
+      coverImg.src = storeConfig.coverUrl ? storeConfig.coverUrl : SVG_FALLBACK;
     }
 
     function renderCategoriesBar() {
@@ -870,6 +870,10 @@
 
     function renderProductSelectCategories() {
       const select = document.getElementById('prod-category');
+      if (categories.length === 0) {
+        select.innerHTML = `<option value="Geral">Geral</option>`;
+        return;
+      }
       select.innerHTML = categories.map(cat => `
         <option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>
       `).join('');
@@ -919,10 +923,12 @@
         </div>
       ` : '';
 
+      const imgSrc = product.imageUrl ? escapeHtml(product.imageUrl) : SVG_FALLBACK;
+
       return `
         <div class="product-card">
           <div class="product-img-wrapper">
-            <img src="${escapeHtml(product.imageUrl) || SVG_FALLBACK}" class="product-img" onerror="this.src='${SVG_FALLBACK}'" alt="${escapeHtml(product.name)}">
+            <img src="${imgSrc}" class="product-img" alt="${escapeHtml(product.name)}">
             ${admButtons}
           </div>
           <div class="product-details">
@@ -1006,6 +1012,12 @@
         return;
       }
 
+      const phoneClean = storeConfig.phone.replace(/\D/g, '');
+      if (phoneClean.length < 10) {
+        alert("O número de WhatsApp cadastrado parece ser inválido.");
+        return;
+      }
+
       let message = `*Novo Pedido - ${storeConfig.name}*\n\n`;
       let total = 0;
 
@@ -1017,9 +1029,8 @@
 
       message += `\n*Total:* ${formatCurrency(total)}`;
 
-      const phone = storeConfig.phone.replace(/\D/g, '');
       const encodedMessage = encodeURIComponent(message);
-      const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodedMessage}`;
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneClean}&text=${encodedMessage}`;
 
       window.open(whatsappUrl, '_blank');
     });
@@ -1051,13 +1062,15 @@
       document.getElementById('form-product').reset();
       document.getElementById('product-id').value = '';
       document.getElementById('modal-product-title').textContent = "Novo Produto";
+      renderProductSelectCategories();
       openModal('modal-product');
     });
 
     function openEditProductModal(product) {
       document.getElementById('product-id').value = product.id;
       document.getElementById('prod-name').value = product.name;
-      document.getElementById('prod-category').value = product.category;
+      renderProductSelectCategories();
+      document.getElementById('prod-category').value = product.category || (categories[0] || 'Geral');
       document.getElementById('prod-price').value = product.price;
       document.getElementById('prod-desc').value = product.description || '';
       document.getElementById('prod-img-url').value = product.imageUrl || '';
@@ -1068,6 +1081,10 @@
     // FORMULÁRIOS
     document.getElementById('form-login').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const btn = document.getElementById('btn-submit-login');
+      btn.disabled = true;
+      btn.textContent = "Entrando...";
+
       const email = document.getElementById('login-email').value;
       const pass = document.getElementById('login-password').value;
       try {
@@ -1076,6 +1093,9 @@
         showToast("Login realizado com sucesso!");
       } catch (err) {
         showToast("Erro ao realizar login: " + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Entrar";
       }
     });
 
@@ -1098,6 +1118,10 @@
 
     document.getElementById('form-store').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const btn = document.getElementById('btn-submit-store');
+      btn.disabled = true;
+      btn.textContent = "Salvando...";
+
       const name = document.getElementById('store-name-input').value;
       const description = document.getElementById('store-desc-input').value;
       const phone = document.getElementById('store-phone-input').value;
@@ -1117,14 +1141,21 @@
         showToast("Configurações salvas com sucesso!");
       } catch (err) {
         showToast("Erro ao salvar loja: " + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Salvar Alterações";
       }
     });
 
     document.getElementById('form-product').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const btn = document.getElementById('btn-submit-product');
+      btn.disabled = true;
+      btn.textContent = "Salvando...";
+
       const id = document.getElementById('product-id').value;
       const name = document.getElementById('prod-name').value;
-      const category = document.getElementById('prod-category').value;
+      const category = document.getElementById('prod-category').value || "Geral";
       const price = parseFloat(document.getElementById('prod-price').value);
       const description = document.getElementById('prod-desc').value;
       const fileInput = document.getElementById('prod-img-file');
@@ -1151,6 +1182,9 @@
         closeModal('modal-product');
       } catch (err) {
         showToast("Erro ao salvar produto: " + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Salvar Produto";
       }
     });
   </script>
