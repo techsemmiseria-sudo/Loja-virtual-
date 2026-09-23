@@ -83,6 +83,7 @@
       background-color: #fff;
       box-shadow: 0 2px 5px rgba(0,0,0,0.05);
       margin-bottom: 20px;
+      position: relative;
     }
 
     .header-info h1 {
@@ -94,6 +95,11 @@
     .header-info p {
       color: #666;
       font-size: 0.95rem;
+    }
+
+    .edit-store-btn {
+      display: none;
+      margin-top: 10px;
     }
 
     /* Container Principal */
@@ -152,6 +158,7 @@
       font-size: 0.85rem;
       color: #666;
       margin: 5px 0;
+      white-space: pre-wrap;
     }
 
     .product-price {
@@ -236,7 +243,7 @@
       margin-top: 20px;
     }
 
-    input[type="file"] {
+    #cover-file-input {
       display: none;
     }
   </style>
@@ -305,27 +312,54 @@
         card.className = 'product-card';
         card.innerHTML = `
           <div class="product-img-container">
-            <img src="${item.imageUrl || 'https://via.placeholder.com/120?text=Sem+Foto'}" class="product-img" alt="${item.name}">
+            <img src="${item.imageUrl || 'https://via.placeholder.com/120?text=Sem+Foto'}" class="product-img" alt="${escapeHtml(item.name || '')}">
           </div>
           <div class="product-details">
             <div>
-              <div class="product-title">${item.name}</div>
-              <div class="product-desc">${item.description || ''}</div>
+              <div class="product-title">${escapeHtml(item.name || '')}</div>
+              <div class="product-desc">${escapeHtml(item.description || '')}</div>
             </div>
-            <div class="product-price">R$ ${parseFloat(item.price).toFixed(2).replace('.', ',')}</div>
+            <div class="product-price">R$ ${parseFloat(item.price || 0).toFixed(2).replace('.', ',')}</div>
             <div class="product-actions" style="display: ${isAdmin ? 'flex' : 'none'};">
-              <button class="btn btn-secondary" onclick="editProduct('${id}', '${item.name}', '${item.description || ''}', '${item.price}', '${item.imageUrl || ''}')">
+              <button class="btn btn-secondary btn-edit-prod">
                 <i class="fa-solid fa-pen"></i> Editar
               </button>
-              <button class="btn btn-danger" onclick="deleteProduct('${id}')">
+              <button class="btn btn-danger btn-delete-prod">
                 <i class="fa-solid fa-trash"></i> Excluir
               </button>
             </div>
           </div>
         `;
+
+        // Atribui os eventos de clique usando elementos em vez de onclick inline para evitar erros com caracteres especiais
+        const btnEdit = card.querySelector('.btn-edit-prod');
+        const btnDelete = card.querySelector('.btn-delete-prod');
+
+        if (btnEdit) {
+          btnEdit.addEventListener('click', () => {
+            editProduct(id, item.name, item.description || '', item.price, item.imageUrl || '');
+          });
+        }
+
+        if (btnDelete) {
+          btnDelete.addEventListener('click', () => {
+            deleteProduct(id);
+          });
+        }
+
         productsContainer.appendChild(card);
       });
     });
+
+    // Helper para evitar problemas de XSS/Sintaxe
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
 
     // 3. MONITORAR STATUS DE AUTENTICAÇÃO
     onAuthStateChanged(auth, (user) => {
@@ -335,6 +369,7 @@
       document.getElementById('btn-logout').style.display = isAdmin ? "inline-flex" : "none";
       document.getElementById('btn-add-product').style.display = isAdmin ? "inline-flex" : "none";
       document.getElementById('cover-upload-label').style.display = isAdmin ? "inline-flex" : "none";
+      document.getElementById('btn-edit-store').style.display = isAdmin ? "inline-flex" : "none";
 
       document.querySelectorAll('.product-actions').forEach(el => {
         el.style.display = isAdmin ? 'flex' : 'none';
@@ -347,6 +382,10 @@
       const file = e.target.files[0];
       if (!file) return;
 
+      const labelBtn = document.getElementById('cover-upload-label');
+      const originalText = labelBtn.innerHTML;
+      labelBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+
       try {
         const storageRef = ref(storage, `covers/cover_${Date.now()}`);
         await uploadBytes(storageRef, file);
@@ -356,14 +395,40 @@
         alert("Capa atualizada com sucesso!");
       } catch (err) {
         console.error(err);
-        alert("Erro ao enviar imagem de capa.");
+        alert("Erro ao enviar imagem de capa: " + err.message);
+      } finally {
+        labelBtn.innerHTML = originalText;
+        e.target.value = '';
       }
     });
 
-    // 5. SALVAR / EDITAR PRODUTO
+    // 5. EDITAR DADOS DA LOJA (Nome / Descrição)
+    document.getElementById('store-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!isAdmin) return;
+
+      const name = document.getElementById('store-name-input').value;
+      const description = document.getElementById('store-desc-input').value;
+
+      try {
+        await setDoc(doc(db, "store_config", "info"), { name, description }, { merge: true });
+        alert("Informações da loja atualizadas!");
+        closeStoreModal();
+      } catch (err) {
+        console.error(err);
+        alert("Erro ao salvar informações da loja.");
+      }
+    });
+
+    // 6. SALVAR / EDITAR PRODUTO
     document.getElementById('product-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!isAdmin) return;
+
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      const originalBtnText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
 
       const name = document.getElementById('prod-name').value;
       const description = document.getElementById('prod-desc').value;
@@ -392,13 +457,23 @@
         closeProductModal();
       } catch (err) {
         console.error(err);
-        alert("Erro ao salvar o produto.");
+        alert("Erro ao salvar o produto: " + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
       }
     });
 
-    // Métodos expostos para interações nos botões da interface
+    // Métodos globais expostos para controle de modais e ações
     window.openLoginModal = () => document.getElementById('modal-login').style.display = 'flex';
     window.closeLoginModal = () => document.getElementById('modal-login').style.display = 'none';
+
+    window.openStoreModal = () => {
+      document.getElementById('store-name-input').value = storeNameEl.textContent;
+      document.getElementById('store-desc-input').value = storeDescEl.textContent;
+      document.getElementById('modal-store').style.display = 'flex';
+    };
+    window.closeStoreModal = () => document.getElementById('modal-store').style.display = 'none';
 
     window.loginAdmin = async () => {
       const email = document.getElementById('login-email').value;
@@ -429,6 +504,7 @@
       document.getElementById('prod-desc').value = description;
       document.getElementById('prod-price').value = price;
       document.getElementById('prod-current-image-url').value = imageUrl;
+      document.getElementById('prod-file-input').value = '';
       document.getElementById('modal-product-title').textContent = "Editar Produto";
       document.getElementById('modal-product').style.display = 'flex';
     };
@@ -443,6 +519,13 @@
         }
       }
     };
+
+    // Fechar modais ao clicar no fundo
+    document.querySelectorAll('.modal-backdrop').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.style.display = 'none';
+      });
+    });
   </script>
 </head>
 <body>
@@ -476,6 +559,9 @@
   <div class="header-info">
     <h1 id="store-name">Minha Loja Virtual</h1>
     <p id="store-desc">Confira nossos produtos abaixo!</p>
+    <button id="btn-edit-store" class="btn btn-secondary edit-store-btn" onclick="openStoreModal()">
+      <i class="fa-solid fa-pen"></i> Editar Dados da Loja
+    </button>
   </div>
 
   <!-- Lista de Produtos -->
@@ -491,17 +577,38 @@
     <div class="modal-content">
       <div class="modal-header">Acesso do Administrador</div>
       <div class="form-group">
-        <label>E-mail</label>
+        <label for="login-email">E-mail</label>
         <input type="email" id="login-email" placeholder="admin@email.com" />
       </div>
       <div class="form-group">
-        <label>Senha</label>
+        <label for="login-pass">Senha</label>
         <input type="password" id="login-pass" placeholder="******" />
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeLoginModal()">Cancelar</button>
-        <button class="btn btn-primary" onclick="loginAdmin()">Entrar</button>
+        <button type="button" class="btn btn-secondary" onclick="closeLoginModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="loginAdmin()">Entrar</button>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL EDITAR DADOS DA LOJA (ADM) -->
+  <div id="modal-store" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">Editar Dados da Loja</div>
+      <form id="store-form">
+        <div class="form-group">
+          <label for="store-name-input">Nome da Loja</label>
+          <input type="text" id="store-name-input" required />
+        </div>
+        <div class="form-group">
+          <label for="store-desc-input">Descrição / Slogan</label>
+          <textarea id="store-desc-input" rows="2"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeStoreModal()">Cancelar</button>
+          <button type="submit" class="btn btn-success">Salvar Alterações</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -513,22 +620,22 @@
         <input type="hidden" id="prod-current-image-url" />
         
         <div class="form-group">
-          <label>Nome do Produto</label>
+          <label for="prod-name">Nome do Produto</label>
           <input type="text" id="prod-name" required placeholder="Ex: Hambúrguer" />
         </div>
         
         <div class="form-group">
-          <label>Descrição</label>
+          <label for="prod-desc">Descrição</label>
           <textarea id="prod-desc" rows="3" placeholder="Ingredientes e detalhes..."></textarea>
         </div>
 
         <div class="form-group">
-          <label>Preço (R$)</label>
+          <label for="prod-price">Preço (R$)</label>
           <input type="number" step="0.01" id="prod-price" required placeholder="25.00" />
         </div>
 
         <div class="form-group">
-          <label>Imagem (Selecione da Galeria)</label>
+          <label for="prod-file-input">Imagem (Selecione da Galeria)</label>
           <input type="file" id="prod-file-input" accept="image/*" style="display:block;" />
         </div>
 
