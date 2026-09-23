@@ -87,22 +87,6 @@
       object-fit: cover;
     }
 
-    .cover-upload-btn {
-      position: absolute;
-      bottom: 15px;
-      right: 15px;
-      background: rgba(0, 0, 0, 0.75);
-      color: #fff;
-      padding: 8px 16px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      display: none;
-      align-items: center;
-      gap: 6px;
-      border: 1px solid #fff;
-    }
-
     /* Header Profile Info */
     .header-info {
       padding: 20px;
@@ -331,10 +315,6 @@
       margin-top: 20px;
     }
 
-    #cover-file-input {
-      display: none;
-    }
-
     /* Barra Inferior do Carrinho */
     .cart-bar {
       position: fixed;
@@ -364,15 +344,12 @@
     }
   </style>
 
-  <!-- Script Firebase v10 em formato de Módulo -->
+  <!-- Script Firebase v10 sem Firebase Storage -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
-      getFirestore, collection, doc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy 
+      getFirestore, collection, doc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { 
-      getStorage, ref, uploadBytes, getDownloadURL 
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
     import { 
       getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -387,10 +364,9 @@
       appId: "1:517189427475:web:99c1283482f9aed860fae6"
     };
 
-    // Inicialização dos serviços
+    // Inicialização do Firestore e Auth
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const storage = getStorage(app);
     const auth = getAuth(app);
 
     let isAdmin = false;
@@ -402,7 +378,7 @@
     let searchQuery = "";
     let cart = [];
 
-    // Função Toast
+    // Notificação Toast
     function showToast(message, type = "success") {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
@@ -410,41 +386,6 @@
       toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
       container.appendChild(toast);
       setTimeout(() => toast.remove(), 3500);
-    }
-
-    // Helper para Otimização e Compressão de Imagens no Cliente
-    async function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.75) {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (event) => {
-          const img = new Image();
-          img.src = event.target.result;
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            let width = img.width;
-            let height = img.height;
-
-            if (width > height) {
-              if (width > maxWidth) {
-                height = Math.round((height * maxWidth) / width);
-                width = maxWidth;
-              }
-            } else {
-              if (height > maxHeight) {
-                width = Math.round((width * maxHeight) / height);
-                height = maxHeight;
-              }
-            }
-
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-            canvas.toBlob((blob) => resolve(blob), 'image/jpeg', quality);
-          };
-        };
-      });
     }
 
     // 1. CARREGAR CONFIGURAÇÕES DA LOJA
@@ -467,7 +408,7 @@
       if (docSnap.exists()) {
         categories = docSnap.data().items || [];
       } else {
-        categories = ["Lanches", "Bebidas", "Sobremesas"]; // Padrão
+        categories = ["Lanches", "Bebidas", "Sobremesas"];
       }
       renderCategoryPills();
       updateCategorySelectOptions();
@@ -526,7 +467,6 @@
         return;
       }
 
-      // Agrupar por Categorias
       const grouped = {};
       filtered.forEach(item => {
         const cat = item.category || "Outros";
@@ -605,7 +545,7 @@
         .replace(/'/g, "&#039;");
     }
 
-    // 4. MONITORAR STATUS DE AUTENTICAÇÃO
+    // 4. AUTENTICAÇÃO E PERMISSÕES
     onAuthStateChanged(auth, (user) => {
       isAdmin = !!user;
       document.getElementById('admin-status').textContent = isAdmin ? "Modo Administrador Ativo" : "Modo Cliente";
@@ -613,7 +553,6 @@
       document.getElementById('btn-logout').style.display = isAdmin ? "inline-flex" : "none";
       document.getElementById('btn-add-product').style.display = isAdmin ? "inline-flex" : "none";
       document.getElementById('btn-manage-cat').style.display = isAdmin ? "inline-flex" : "none";
-      document.getElementById('cover-upload-label').style.display = isAdmin ? "inline-flex" : "none";
       document.getElementById('btn-edit-store').style.display = isAdmin ? "inline-flex" : "none";
 
       document.querySelectorAll('.product-actions').forEach(el => {
@@ -621,34 +560,7 @@
       });
     });
 
-    // 5. UPLOAD E COMPRESSÃO DE CAPA
-    document.getElementById('cover-file-input').addEventListener('change', async (e) => {
-      if (!isAdmin) return;
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const labelBtn = document.getElementById('cover-upload-label');
-      const originalText = labelBtn.innerHTML;
-      labelBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Otimizando...';
-
-      try {
-        const compressedBlob = await compressImage(file, 1200, 600, 0.8);
-        const storageRef = ref(storage, `covers/cover_${Date.now()}`);
-        await uploadBytes(storageRef, compressedBlob);
-        const url = await getDownloadURL(storageRef);
-
-        await setDoc(doc(db, "store_config", "info"), { coverUrl: url }, { merge: true });
-        showToast("Capa atualizada com sucesso!");
-      } catch (err) {
-        console.error(err);
-        showToast("Erro ao enviar imagem de capa.", "error");
-      } finally {
-        labelBtn.innerHTML = originalText;
-        e.target.value = '';
-      }
-    });
-
-    // 6. GERENCIAMENTO DE CATEGORIAS
+    // 5. GERENCIAMENTO DE CATEGORIAS
     document.getElementById('category-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!isAdmin) return;
@@ -691,7 +603,7 @@
       renderCategoryManagementList();
     };
 
-    // 7. EDITAR DADOS DA LOJA
+    // 6. EDITAR DADOS DA LOJA (INCLUINDO LINK DA CAPA)
     document.getElementById('store-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!isAdmin) return;
@@ -699,9 +611,10 @@
       const name = document.getElementById('store-name-input').value;
       const description = document.getElementById('store-desc-input').value;
       const phone = document.getElementById('store-phone-input').value.replace(/\D/g, '');
+      const coverUrl = document.getElementById('store-cover-input').value.trim();
 
       try {
-        await setDoc(doc(db, "store_config", "info"), { name, description, phone }, { merge: true });
+        await setDoc(doc(db, "store_config", "info"), { name, description, phone, coverUrl }, { merge: true });
         showToast("Informações da loja atualizadas!");
         closeStoreModal();
       } catch (err) {
@@ -710,7 +623,7 @@
       }
     });
 
-    // 8. SALVAR / EDITAR PRODUTO COM PARSE DE PREÇO SEGURO
+    // 7. SALVAR / EDITAR PRODUTO (VIA LINK DE IMAGEM)
     document.getElementById('product-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!isAdmin) return;
@@ -723,23 +636,12 @@
       const name = document.getElementById('prod-name').value;
       const description = document.getElementById('prod-desc').value;
       const category = document.getElementById('prod-category').value;
+      const imageUrl = document.getElementById('prod-image-url').value.trim();
       
-      // Parse flexível para aceitar vírgula ou ponto
       const rawPrice = document.getElementById('prod-price').value.toString().replace(',', '.');
       const price = parseFloat(rawPrice) || 0;
 
-      const fileInput = document.getElementById('prod-file-input');
-      let imageUrl = document.getElementById('prod-current-image-url').value;
-
       try {
-        if (fileInput.files.length > 0) {
-          const file = fileInput.files[0];
-          const compressedBlob = await compressImage(file, 600, 600, 0.75);
-          const storageRef = ref(storage, `products/prod_${Date.now()}`);
-          await uploadBytes(storageRef, compressedBlob);
-          imageUrl = await getDownloadURL(storageRef);
-        }
-
         const productData = { name, description, price, category, imageUrl };
 
         if (currentEditingProductId) {
@@ -760,7 +662,7 @@
       }
     });
 
-    // 9. CARRINHO DE COMPRAS E PEDIDO WHATSAPP
+    // 8. CARRINHO DE COMPRAS E PEDIDO WHATSAPP
     function addToCart(product) {
       cart.push(product);
       updateCartUI();
@@ -812,6 +714,7 @@
       document.getElementById('store-name-input').value = storeNameEl.textContent;
       document.getElementById('store-desc-input').value = storeDescEl.textContent;
       document.getElementById('store-phone-input').value = storeWhatsAppPhone;
+      document.getElementById('store-cover-input').value = coverImageEl.src;
       document.getElementById('modal-store').style.display = 'flex';
     };
     window.closeStoreModal = () => document.getElementById('modal-store').style.display = 'none';
@@ -842,7 +745,6 @@
     window.openProductModal = () => {
       currentEditingProductId = null;
       document.getElementById('product-form').reset();
-      document.getElementById('prod-current-image-url').value = '';
       document.getElementById('modal-product-title').textContent = "Adicionar Produto";
       document.getElementById('modal-product').style.display = 'flex';
     };
@@ -855,8 +757,7 @@
       document.getElementById('prod-desc').value = description;
       document.getElementById('prod-price').value = price;
       document.getElementById('prod-category').value = category || '';
-      document.getElementById('prod-current-image-url').value = imageUrl;
-      document.getElementById('prod-file-input').value = '';
+      document.getElementById('prod-image-url').value = imageUrl || '';
       document.getElementById('modal-product-title').textContent = "Editar Produto";
       document.getElementById('modal-product').style.display = 'flex';
     };
@@ -908,10 +809,6 @@
   <!-- Banner de Capa -->
   <div class="cover-container">
     <img id="cover-image" src="https://via.placeholder.com/800x220?text=Capa+da+Loja" class="cover-img" alt="Capa" />
-    <label id="cover-upload-label" for="cover-file-input" class="cover-upload-btn">
-      <i class="fa-solid fa-camera"></i> Alterar Capa
-    </label>
-    <input type="file" id="cover-file-input" accept="image/*" />
   </div>
 
   <!-- Nome e Descrição da Loja -->
@@ -919,7 +816,7 @@
     <h1 id="store-name">Minha Loja Virtual</h1>
     <p id="store-desc">Confira nossos produtos abaixo!</p>
     <button id="btn-edit-store" class="btn btn-secondary edit-store-btn" onclick="openStoreModal()">
-      <i class="fa-solid fa-pen"></i> Editar Dados da Loja
+      <i class="fa-solid fa-pen"></i> Editar Dados da Loja / Capa
     </button>
   </div>
 
@@ -1008,6 +905,10 @@
           <label for="store-phone-input">WhatsApp para Pedidos (com DDD)</label>
           <input type="text" id="store-phone-input" placeholder="Ex: 51999999999" />
         </div>
+        <div class="form-group">
+          <label for="store-cover-input">Link da Imagem da Capa (URL)</label>
+          <input type="url" id="store-cover-input" placeholder="https://imgur.com/sua-capa.jpg" />
+        </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" onclick="closeStoreModal()">Cancelar</button>
           <button type="submit" class="btn btn-success">Salvar Alterações</button>
@@ -1021,8 +922,6 @@
     <div class="modal-content">
       <div class="modal-header" id="modal-product-title">Adicionar Produto</div>
       <form id="product-form">
-        <input type="hidden" id="prod-current-image-url" />
-        
         <div class="form-group">
           <label for="prod-name">Nome do Produto</label>
           <input type="text" id="prod-name" required placeholder="Ex: Hambúrguer" />
@@ -1046,8 +945,8 @@
         </div>
 
         <div class="form-group">
-          <label for="prod-file-input">Imagem (Selecione da Galeria)</label>
-          <input type="file" id="prod-file-input" accept="image/*" style="display:block;" />
+          <label for="prod-image-url">Link da Imagem (URL)</label>
+          <input type="url" id="prod-image-url" placeholder="https://imgur.com/sua-imagem.jpg" />
         </div>
 
         <div class="modal-footer">
