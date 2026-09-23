@@ -82,19 +82,45 @@
             text-align: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.15);
             position: relative;
+            transition: background-image 0.3s ease-in-out;
         }
 
         header::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.55);
             z-index: 1;
         }
 
         .header-content {
             position: relative;
             z-index: 2;
+        }
+
+        /* Edição rápida da capa */
+        .edit-cover-btn {
+            position: absolute;
+            bottom: 12px;
+            right: 15px;
+            z-index: 5;
+            background: rgba(0, 0, 0, 0.65);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+
+        .edit-cover-btn:hover {
+            background: rgba(0, 0, 0, 0.85);
         }
 
         .store-logo {
@@ -246,7 +272,7 @@
 
         .product-img {
             width: 100%;
-            height: 150px;
+            height: 160px;
             object-fit: cover;
             border-radius: 8px;
             margin-bottom: 10px;
@@ -648,6 +674,15 @@
             border: 1px solid var(--border-color);
         }
 
+        .admin-product-thumb {
+            width: 42px;
+            height: 42px;
+            border-radius: 6px;
+            object-fit: cover;
+            margin-right: 10px;
+            background: #ddd;
+        }
+
         .admin-product-info h4 {
             font-size: 0.9rem;
             font-weight: 600;
@@ -809,6 +844,12 @@
                 <span class="store-pill" id="storeInstaDisplay"><i class="fa-brands fa-instagram"></i> @cardapiovirtual</span>
             </div>
         </div>
+
+        <!-- Botão de Edição Rápida de Capa (Visível quando Autenticado) -->
+        <button class="edit-cover-btn" id="quickEditCoverBtn" onclick="triggerQuickCoverChange()">
+            <i class="fa-solid fa-camera"></i> Alterar Capa
+        </button>
+        <input type="file" id="quickCoverFileInput" accept="image/*" style="display:none;" onchange="uploadQuickCover(event)">
     </header>
 
     <!-- Controls: Search & Category Filter -->
@@ -990,7 +1031,7 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="prodImgUrl">URL da Imagem</label>
+                            <label for="prodImgUrl">URL da Imagem do Produto</label>
                             <input type="text" id="prodImgUrl" class="form-control" placeholder="https://...">
                         </div>
                         <div class="form-group">
@@ -1114,8 +1155,8 @@
         // Helper de formatação monetária
         const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
 
-        // Imagem Fallback
-        const placeholderImg = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80";
+        // Imagem Fallback de Produto
+        const placeholderImg = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80";
 
         // Configurações Padrão de Fallback
         const defaultStoreConfig = {
@@ -1131,7 +1172,81 @@
             salesMode: "direct"
         };
 
-        const defaultProducts = [];
+        // Produtos Padrão com Fotos de Alta Resolução
+        const defaultProducts = [
+            {
+                name: "Caranguejada Especial",
+                nameEn: "Special Crab Stew",
+                price: 45.00,
+                category: "Especiais",
+                categoryEn: "Specials",
+                description: "4 unidades de caranguejo ao molho de leite de coco e cheiro-verde, acompanhado de pirão e farofa.",
+                descriptionEn: "4 crabs cooked in coconut milk and fresh herbs sauce, served with gravy and toasted cassava flour.",
+                available: true,
+                favorite: true,
+                image: "https://images.unsplash.com/photo-1559737605-34161048b64a?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                name: "Camarão alho e óleo",
+                nameEn: "Garlic Butter Shrimp",
+                price: 68.00,
+                category: "Petiscos",
+                categoryEn: "Appetizers",
+                description: "500g de camarões selecionados salteados no alho dourado e azeite extra virgem.",
+                descriptionEn: "500g of selected shrimp sautéed with golden garlic and extra virgin olive oil.",
+                available: true,
+                favorite: true,
+                image: "https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                name: "Moqueca Mista Baiana",
+                nameEn: "Mixed Seafood Stew",
+                price: 110.00,
+                category: "Pratos Principais",
+                categoryEn: "Main Dishes",
+                description: "Postas de peixe fresco e camarão com azeite de dendê, pimentões, leite de coco e coentro.",
+                descriptionEn: "Fresh fish fillets and prawns stewed with dende oil, bell peppers, coconut milk and cilantro.",
+                available: true,
+                favorite: false,
+                image: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                name: "Isca de Peixe Crocante",
+                nameEn: "Crispy Fish Bites",
+                price: 42.00,
+                category: "Petiscos",
+                categoryEn: "Appetizers",
+                description: "Filé de peixe empanado na panko bem crocante, servido com molho tártaro artesanal.",
+                descriptionEn: "Fish fillet breaded in crispy panko, served with homemade tartar sauce.",
+                available: true,
+                favorite: false,
+                image: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                name: "Caipirinha Tradicional",
+                nameEn: "Traditional Caipirinha",
+                price: 18.00,
+                category: "Bebidas",
+                categoryEn: "Drinks",
+                description: "Cachaça artesanal, limão taiti fresco e açúcar macerado com bastante gelo.",
+                descriptionEn: "Artisanal cachaça, fresh lime, and sugar muddled with ice.",
+                available: true,
+                favorite: false,
+                image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                name: "Suco Natural de Abacaxi c/ Hortelã",
+                nameEn: "Pineapple Mint Juice",
+                price: 12.00,
+                category: "Bebidas",
+                categoryEn: "Drinks",
+                description: "Fruta natural batida na hora com folhas de hortelã geladas.",
+                descriptionEn: "Fresh blended pineapple fruit with cold mint leaves.",
+                available: true,
+                favorite: false,
+                image: "https://images.unsplash.com/photo-1621263764928-df1444c5e859?auto=format&fit=crop&w=600&q=80"
+            }
+        ];
 
         // Dicionário Multilíngue (UI Labels)
         const i18n = {
@@ -1222,10 +1337,14 @@
             onAuthStateChanged(auth, (user) => {
                 isAuthenticated = !!user;
                 const lojistaBtnText = document.getElementById("lojistaBtnText");
+                const quickEditCoverBtn = document.getElementById("quickEditCoverBtn");
+
                 if (user) {
                     lojistaBtnText.innerText = i18n[currentLang].adminPanel;
+                    quickEditCoverBtn.style.display = "flex";
                 } else {
                     lojistaBtnText.innerText = i18n[currentLang].lojistaMode;
+                    quickEditCoverBtn.style.display = "none";
                 }
             });
         }
@@ -1283,6 +1402,25 @@
             }
 
             document.getElementById("searchInput").placeholder = i18n[currentLang].searchPlaceholder;
+        }
+
+        // Alteração Rápida de Capa no Cabeçalho
+        function triggerQuickCoverChange() {
+            document.getElementById("quickCoverFileInput").click();
+        }
+
+        async function uploadQuickCover(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                showToast("Enviando nova imagem de capa...");
+                const newCoverUrl = await uploadFileToStorage(file, "covers");
+                await setDoc(doc(db, "store_config", "settings"), { coverUrl: newCoverUrl }, { merge: true });
+                showToast("Capa atualizada com sucesso!");
+            } catch (e) {
+                showToast("Erro ao atualizar foto de capa: " + e.message);
+            }
         }
 
         function renderCategories() {
@@ -1704,11 +1842,15 @@
             const container = document.getElementById("adminProductList");
             container.innerHTML = products.map(p => {
                 const isAvail = p.available !== false;
+                const imgSrc = p.image || placeholderImg;
                 return `
                     <div class="admin-product-item">
-                        <div class="admin-product-info">
-                            <h4>${p.name}</h4>
-                            <span>${formatCurrency(p.price)} | ${p.category}</span>
+                        <div style="display:flex; align-items:center;">
+                            <img src="${imgSrc}" class="admin-product-thumb" alt="${p.name}" onerror="this.src='${placeholderImg}'">
+                            <div class="admin-product-info">
+                                <h4>${p.name}</h4>
+                                <span>${formatCurrency(p.price)} | ${p.category}</span>
+                            </div>
                         </div>
                         <div style="display:flex; gap:6px;">
                             <button class="btn-toggle-sm ${isAvail ? 'available' : ''}" onclick="toggleProductAvailability('${p.id}', ${isAvail})">
@@ -1884,7 +2026,7 @@
             }, 3000);
         }
 
-        // Exportação global de funções chamadas por eventos HTML inline
+        // Exportação global de funções para chamadas em eventos inline
         window.toggleLanguage = toggleLanguage;
         window.handleLojistaClick = handleLojistaClick;
         window.verifyLogin = verifyLogin;
@@ -1906,6 +2048,8 @@
         window.printQrSheet = printQrSheet;
         window.saveAdminSettings = saveAdminSettings;
         window.processMenuImport = processMenuImport;
+        window.triggerQuickCoverChange = triggerQuickCoverChange;
+        window.uploadQuickCover = uploadQuickCover;
     </script>
 </body>
 </html>
