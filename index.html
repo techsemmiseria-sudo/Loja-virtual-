@@ -465,6 +465,18 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        .user-badge {
+            background: rgba(255,255,255,0.1);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: #cbd5e0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
     </style>
 </head>
 <body>
@@ -542,6 +554,10 @@
             </div>
             <div class="modal-body">
                 
+                <div class="user-badge" id="currentUserBadge">
+                    <i class="fa-solid fa-user-check"></i> <span id="currentUserEmail">Carregando usuário...</span>
+                </div>
+
                 <form id="productForm" onsubmit="handleSaveProduct(event)">
                     <input type="hidden" id="editProductId">
                     
@@ -749,7 +765,15 @@ Retorne EXCLUSIVAMENTE um objeto JSON válido (sem marcações markdown como \`\
             onAuthStateChanged(auth, (user) => {
                 currentUser = user;
                 const btnLabel = document.getElementById("lblAdminBtn");
-                btnLabel.innerText = user ? "Painel Gestor" : "Painel Admin";
+                const userEmailSpan = document.getElementById("currentUserEmail");
+                
+                if (user) {
+                    btnLabel.innerText = "Painel Gestor";
+                    userEmailSpan.innerText = `Logado como: ${user.email}`;
+                } else {
+                    btnLabel.innerText = "Painel Admin";
+                    userEmailSpan.innerText = "Não autenticado";
+                }
             });
         }
 
@@ -867,6 +891,15 @@ Retorne EXCLUSIVAMENTE um objeto JSON válido (sem marcações markdown como \`\
             showToast("Sessão encerrada.");
         };
 
+        // Função auxiliar para tratar erros de permissão do Firestore Security Rules
+        function handleFirestoreError(error) {
+            if (error.code === 'permission-denied') {
+                showToast("Acesso negado: Seu e-mail não possui permissão de Administrador!");
+            } else {
+                showToast("Erro de gravação: " + error.message);
+            }
+        }
+
         window.handleSaveProduct = async function(e) {
             e.preventDefault();
 
@@ -910,7 +943,7 @@ Retorne EXCLUSIVAMENTE um objeto JSON válido (sem marcações markdown como \`\
 
                 resetProductForm();
             } catch (err) {
-                showToast("Erro ao salvar produto: " + err.message);
+                handleFirestoreError(err);
             } finally {
                 btnSubmit.disabled = false;
                 loadingStatus.classList.remove("active");
@@ -971,7 +1004,7 @@ Retorne EXCLUSIVAMENTE um objeto JSON válido (sem marcações markdown como \`\
                     await deleteDoc(doc(db, "menu_items", id));
                     showToast("Produto removido!");
                 } catch (e) {
-                    showToast("Erro ao excluir: " + e.message);
+                    handleFirestoreError(e);
                 }
             }
         };
@@ -1007,3 +1040,4 @@ Retorne EXCLUSIVAMENTE um objeto JSON válido (sem marcações markdown como \`\
     </script>
 </body>
 </html>
+
