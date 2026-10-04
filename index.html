@@ -1,1192 +1,1009 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cardápio Digital & Loja Online</title>
-  <!-- Google Fonts & FontAwesome Icons -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardápio Virtual</title>
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <style>
-    /* ==========================================================================
-       1. VARIÁVEIS DE DESIGN E RESET
-       ========================================================================== */
-    :root {
-      --primary-color: #E53935;
-      --primary-hover: #C62828;
-      --dark-blue: #1A237E;
-      --dark-blue-hover: #0D47A1;
-      --bg-light: #F4F6F9;
-      --card-bg: #FFFFFF;
-      --text-main: #212121;
-      --text-muted: #666666;
-      --border-color: #E0E0E0;
-      --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-      --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
-      --radius: 12px;
-      --transition: all 0.3s ease;
-    }
+    <style>
+        :root {
+            --primary: #c82333;
+            --primary-dark: #9f1a27;
+            --secondary: #1a252c;
+            --accent: #e67e22;
+            --bg-body: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-dark: #2c3e50;
+            --text-muted: #6c757d;
+            --border: #e9ecef;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+            --transition: all 0.25s ease;
+        }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', sans-serif;
-    }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
 
-    body {
-      background-color: var(--bg-light);
-      color: var(--text-main);
-      padding-bottom: 100px;
-      min-height: 100vh;
-    }
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-    a { text-decoration: none; color: inherit; }
-    button { cursor: pointer; border: none; outline: none; font-family: inherit; }
+        header {
+            background: linear-gradient(135deg, var(--secondary) 0%, #0d1317 100%);
+            color: white;
+            padding: 1.5rem 1rem 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
 
-    /* ==========================================================================
-       2. UI COMPONENTS & LAYOUT
-       ========================================================================== */
-    
-    /* Admin Bar */
-    .admin-bar {
-      background-color: var(--dark-blue);
-      color: #fff;
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.85rem;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: var(--shadow-sm);
-    }
-    .admin-status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 500;
-    }
-    .status-badge {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background-color: #4CAF50;
-    }
-    .status-badge.off { background-color: #FFC107; }
-    .admin-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .btn-admin-action {
-      background: rgba(255,255,255,0.15);
-      color: #fff;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      transition: var(--transition);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .btn-admin-action:hover { background: rgba(255,255,255,0.3); }
+        .header-top {
+            max-width: 1100px;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    /* Store Header & Cover */
-    .cover-container {
-      width: 100%;
-      height: 220px;
-      position: relative;
-      background-color: #ddd;
-    }
-    .cover-image {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .store-info-card {
-      max-width: 1000px;
-      margin: -50px auto 20px auto;
-      background: var(--card-bg);
-      padding: 24px;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-md);
-      position: relative;
-      text-align: center;
-      width: calc(100% - 32px);
-    }
-    .store-name {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: var(--dark-blue);
-      margin-bottom: 6px;
-    }
-    .store-desc {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      margin-bottom: 12px;
-    }
-    .btn-edit-store {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      background: var(--bg-light);
-      color: var(--dark-blue);
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: var(--transition);
-    }
-    .btn-edit-store:hover { background: #e2e8f0; }
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: white;
+        }
 
-    /* Main Container */
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 0 16px;
-    }
+        .brand-logo i {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
 
-    /* Search & Categories Filter */
-    .search-box {
-      position: relative;
-      margin-bottom: 20px;
-    }
-    .search-input {
-      width: 100%;
-      padding: 14px 16px 14px 44px;
-      border: 1px solid var(--border-color);
-      border-radius: 30px;
-      font-size: 0.95rem;
-      background: var(--card-bg);
-      box-shadow: var(--shadow-sm);
-      transition: var(--transition);
-    }
-    .search-input:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.15);
-    }
-    .search-icon {
-      position: absolute;
-      left: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-muted);
-    }
+        .btn-header {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 44px;
+        }
 
-    .categories-bar {
-      display: flex;
-      gap: 10px;
-      overflow-x: auto;
-      padding-bottom: 10px;
-      margin-bottom: 24px;
-      scrollbar-width: none;
-    }
-    .categories-bar::-webkit-scrollbar { display: none; }
+        .btn-header:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
 
-    .cat-pill {
-      padding: 8px 18px;
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      white-space: nowrap;
-      color: var(--text-muted);
-      transition: var(--transition);
-    }
-    .cat-pill.active, .cat-pill:hover {
-      background: var(--primary-color);
-      color: #fff;
-      border-color: var(--primary-color);
-    }
+        .header-hero {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
 
-    /* Products Grid */
-    .category-section-title {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--dark-blue);
-      margin: 24px 0 16px 0;
-      padding-bottom: 6px;
-      border-bottom: 2px solid var(--border-color);
-    }
+        .header-hero h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
 
-    .products-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-    }
+        .header-hero p {
+            font-size: 0.9rem;
+            color: #cbd5e0;
+        }
 
-    .product-card {
-      background: var(--card-bg);
-      border-radius: var(--radius);
-      overflow: hidden;
-      box-shadow: var(--shadow-sm);
-      display: flex;
-      flex-direction: column;
-      transition: var(--transition);
-      border: 1px solid rgba(0,0,0,0.03);
-    }
-    .product-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-md);
-    }
-    .product-img-wrapper {
-      width: 100%;
-      height: 180px;
-      background: #f0f0f0;
-      position: relative;
-    }
-    .product-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .product-details {
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      flex-grow: 1;
-    }
-    .product-title {
-      font-size: 1.05rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: var(--text-main);
-    }
-    .product-desc {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-bottom: 16px;
-      flex-grow: 1;
-      line-height: 1.4;
-    }
-    .product-bottom {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: auto;
-    }
-    .product-price {
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: var(--primary-color);
-    }
-    .btn-add-cart {
-      background: var(--primary-color);
-      color: #fff;
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.85rem;
-      transition: var(--transition);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .btn-add-cart:hover { background: var(--primary-hover); }
+        .lang-bar {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 1.2rem;
+            flex-wrap: wrap;
+        }
 
-    .product-adm-actions {
-      display: flex;
-      gap: 8px;
-      position: absolute;
-      top: 10px;
-      right: 10px;
-    }
-    .btn-adm-icon {
-      background: rgba(255,255,255,0.9);
-      color: var(--text-main);
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.8rem;
-      box-shadow: var(--shadow-sm);
-      transition: var(--transition);
-    }
-    .btn-adm-icon.delete:hover { background: #FFEBEE; color: var(--primary-color); }
-    .btn-adm-icon.edit:hover { background: #E8EAF6; color: var(--dark-blue); }
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 40px;
+        }
 
-    /* Cart Footer */
-    .cart-footer {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: calc(100% - 32px);
-      max-width: 800px;
-      background: var(--dark-blue);
-      color: #fff;
-      padding: 12px 20px;
-      border-radius: 30px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 90;
-      transition: var(--transition);
-    }
-    .cart-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .cart-badge {
-      background: var(--primary-color);
-      color: #fff;
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 0.85rem;
-    }
-    .cart-total-val {
-      font-size: 1.1rem;
-      font-weight: 700;
-    }
-    .btn-whatsapp {
-      background: #25D366;
-      color: #fff;
-      padding: 10px 18px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: var(--transition);
-    }
-    .btn-whatsapp:hover { background: #1EBE5D; }
+        .lang-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(200, 35, 51, 0.4);
+        }
 
-    /* Toasts */
-    .toast-container {
-      position: fixed;
-      top: 60px;
-      right: 20px;
-      z-index: 2000;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .toast {
-      background: #323232;
-      color: #fff;
-      padding: 12px 20px;
-      border-radius: 8px;
-      box-shadow: var(--shadow-md);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 0.9rem;
-      animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-    }
-    .toast.success { border-left: 4px solid #4CAF50; }
-    .toast.error { border-left: 4px solid var(--primary-color); }
+        main {
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 1.5rem 1rem 3rem;
+            flex: 1;
+        }
 
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes fadeOut {
-      from { opacity: 1; }
-      to { opacity: 0; }
-    }
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin: 2rem 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
+        }
 
-    /* Modais */
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      opacity: 0;
-      pointer-events: none;
-      transition: var(--transition);
-      padding: 16px;
-    }
-    .modal-overlay.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .modal-content {
-      background: var(--card-bg);
-      width: 100%;
-      max-width: 500px;
-      border-radius: var(--radius);
-      padding: 24px;
-      box-shadow: var(--shadow-md);
-      max-height: 90vh;
-      overflow-y: auto;
-      position: relative;
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .modal-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--dark-blue);
-    }
-    .btn-close-modal {
-      background: none;
-      font-size: 1.2rem;
-      color: var(--text-muted);
-    }
+        .section-title:first-child {
+            margin-top: 0;
+        }
 
-    /* Forms */
-    .form-group {
-      margin-bottom: 16px;
-    }
-    .form-label {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: var(--text-main);
-    }
-    .form-control {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      font-size: 0.95rem;
-    }
-    .form-control:focus {
-      outline: none;
-      border-color: var(--primary-color);
-    }
-    .btn-submit {
-      width: 100%;
-      padding: 12px;
-      background: var(--primary-color);
-      color: #fff;
-      font-weight: 600;
-      border-radius: 8px;
-      margin-top: 10px;
-      transition: var(--transition);
-    }
-    .btn-submit:hover { background: var(--primary-hover); }
-    .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
 
-    .cat-item-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 12px;
-      background: var(--bg-light);
-      border-radius: 6px;
-      margin-bottom: 8px;
-    }
-  </style>
+        @media (min-width: 640px) {
+            .menu-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (min-width: 1024px) {
+            .menu-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .product-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: var(--transition);
+        }
+
+        .product-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+
+        .product-card.unavailable {
+            opacity: 0.6;
+            filter: grayscale(0.8);
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .product-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .product-price {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            white-space: nowrap;
+        }
+
+        .product-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            margin-bottom: 12px;
+            flex: 1;
+        }
+
+        .allergens-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .allergen-badge {
+            background: #fff5f5;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .admin-card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border);
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            min-height: 40px;
+        }
+
+        .btn-edit { background: #edf2f7; color: var(--text-dark); }
+        .btn-edit:hover { background: #e2e8f0; }
+
+        .btn-delete { background: #fff5f5; color: #e53e3e; }
+        .btn-delete:hover { background: #fed7d7; }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            padding: 1rem;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-container {
+            background: white;
+            width: 100%;
+            max-width: 550px;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: var(--transition);
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            background: var(--secondary);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .form-group { margin-bottom: 1.2rem; }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(200, 35, 51, 0.15);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .form-row .form-group { flex: 1; }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-group input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-box input { padding-left: 40px; }
+
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 44px;
+        }
+
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-primary:disabled { background: #cbd5e0; cursor: not-allowed; }
+
+        .ai-loading-status {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--accent);
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .ai-loading-status.active { display: flex; }
+
+        .toast-container {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: var(--secondary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: var(--transition);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
 </head>
 <body>
 
-  <!-- BARRA DE ADMINISTRADOR -->
-  <div class="admin-bar">
-    <div class="admin-status">
-      <span class="status-badge off" id="status-badge"></span>
-      <span id="status-text">Modo Cliente</span>
-    </div>
-    <div class="admin-actions">
-      <div id="adm-buttons-group" style="display: none; gap: 8px;">
-        <button class="btn-admin-action" id="btn-open-cat-modal"><i class="fa-solid fa-tags"></i> Categorias</button>
-        <button class="btn-admin-action" id="btn-open-prod-modal"><i class="fa-solid fa-plus"></i> Novo Produto</button>
-        <button class="btn-admin-action" id="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
-      </div>
-      <button class="btn-admin-action" id="btn-open-login-modal"><i class="fa-solid fa-lock"></i> Acesso ADM</button>
-    </div>
-  </div>
-
-  <!-- BANNER E CABEÇALHO -->
-  <div class="cover-container">
-    <img id="store-cover-img" src="" alt="Capa da Loja" class="cover-image">
-  </div>
-
-  <div class="store-info-card">
-    <button class="btn-edit-store" id="btn-open-store-modal" style="display: none;" title="Editar Loja">
-      <i class="fa-solid fa-pen"></i>
-    </button>
-    <h1 class="store-name" id="store-name-display">Carregando...</h1>
-    <p class="store-desc" id="store-desc-display">Por favor, aguarde o carregamento das informações.</p>
-  </div>
-
-  <!-- CONTAINER PRINCIPAL -->
-  <main class="container">
-    <div class="search-box">
-      <i class="fa-solid fa-magnifying-glass search-icon"></i>
-      <input type="text" id="search-input" class="search-input" placeholder="Buscar no cardápio...">
-    </div>
-
-    <div class="categories-bar" id="categories-bar"></div>
-    <div id="products-container"></div>
-  </main>
-
-  <!-- CARRINHO FLUTUANTE -->
-  <div class="cart-footer" id="cart-footer" style="display: none;">
-    <div class="cart-info">
-      <span class="cart-badge" id="cart-count">0</span>
-      <div>
-        <div style="font-size: 0.75rem; color: #ccc;">Total acumulado</div>
-        <div class="cart-total-val" id="cart-total">R$ 0,00</div>
-      </div>
-    </div>
-    <button class="btn-whatsapp" id="btn-finish-order">
-      <i class="fa-brands fa-whatsapp"></i> Finalizar Pedido
-    </button>
-  </div>
-
-  <!-- TOASTS -->
-  <div class="toast-container" id="toast-container"></div>
-
-  <!-- MODAIS -->
-
-  <!-- Modal Login -->
-  <div class="modal-overlay" id="modal-login">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">Acesso do Administrador</h3>
-        <button class="btn-close-modal" data-close="modal-login"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <form id="form-login">
-        <div class="form-group">
-          <label class="form-label">E-mail</label>
-          <input type="email" id="login-email" class="form-control" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Senha</label>
-          <input type="password" id="login-password" class="form-control" required>
-        </div>
-        <button type="submit" class="btn-submit" id="btn-submit-login">Entrar</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal Editar Loja -->
-  <div class="modal-overlay" id="modal-store">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">Configurações da Loja</h3>
-        <button class="btn-close-modal" data-close="modal-store"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <form id="form-store">
-        <div class="form-group">
-          <label class="form-label">Nome do Estabelecimento</label>
-          <input type="text" id="store-name-input" class="form-control" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Descrição / Slogan</label>
-          <textarea id="store-desc-input" class="form-control" rows="2" required></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">WhatsApp (com DDD e DDI, ex: 5511999999999)</label>
-          <input type="text" id="store-phone-input" class="form-control" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Imagem de Capa (Arquivo)</label>
-          <input type="file" id="store-cover-file" class="form-control" accept="image/*">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Ou URL Externa da Capa</label>
-          <input type="url" id="store-cover-url" class="form-control" placeholder="https://...">
-        </div>
-        <button type="submit" class="btn-submit" id="btn-submit-store">Salvar Alterações</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal Gerenciar Categorias -->
-  <div class="modal-overlay" id="modal-categories">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">Gerenciar Categorias</h3>
-        <button class="btn-close-modal" data-close="modal-categories"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <form id="form-add-category" style="display: flex; gap: 8px; margin-bottom: 16px;">
-        <input type="text" id="new-cat-input" class="form-control" placeholder="Nova Categoria" required>
-        <button type="submit" class="btn-submit" style="width: auto; margin:0; white-space: nowrap;">Adicionar</button>
-      </form>
-      <div id="categories-list-manage"></div>
-    </div>
-  </div>
-
-  <!-- Modal Cadastrar/Editar Produto -->
-  <div class="modal-overlay" id="modal-product">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title" id="modal-product-title">Novo Produto</h3>
-        <button class="btn-close-modal" data-close="modal-product"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <form id="form-product">
-        <input type="hidden" id="product-id">
-        <div class="form-group">
-          <label class="form-label">Nome do Produto</label>
-          <input type="text" id="prod-name" class="form-control" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Categoria</label>
-          <select id="prod-category" class="form-control" required></select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Preço (R$)</label>
-          <input type="number" step="0.01" id="prod-price" class="form-control" required placeholder="0.00">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Descrição</label>
-          <textarea id="prod-desc" class="form-control" rows="3"></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Imagem do Produto (Arquivo Local)</label>
-          <input type="file" id="prod-img-file" class="form-control" accept="image/*">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Ou URL Externa da Imagem</label>
-          <input type="url" id="prod-img-url" class="form-control" placeholder="https://...">
-        </div>
-        <button type="submit" class="btn-submit" id="btn-submit-product">Salvar Produto</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- JAVASCRIPT & INTEGRACAO FIREBASE -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { 
-      getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged 
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { 
-      getFirestore, doc, collection, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot 
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { 
-      getStorage, ref, uploadBytes, getDownloadURL 
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
-
-    // SUAS CREDENCIAIS FORNECIDAS:
-    const firebaseConfig = {
-      apiKey: "AIzaSyBAYVAy-f-0ir8ePh7wcKxBKQxBadPDT0o",
-      authDomain: "loja-virtual-a71e6.firebaseapp.com",
-      projectId: "loja-virtual-a71e6",
-      storageBucket: "loja-virtual-a71e6.firebasestorage.app",
-      messagingSenderId: "517189427475",
-      appId: "1:517189427475:web:99c1283482f9aed860fae6"
-    };
-
-    // Inicialização
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
-
-    let currentUser = null;
-    let storeConfig = { name: "Minha Loja Digital", description: "Bem-vindo ao nosso cardápio!", phone: "", coverUrl: "" };
-    let categories = [];
-    let products = [];
-    let cart = [];
-    let selectedCategoryFilter = "Todos";
-    let searchQuery = "";
-
-    const SVG_FALLBACK = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%23ccc' stroke-width='2'><rect x='3' y='3' width='18' height='18' rx='2'/><circle cx='8.5' cy='8.5' r='1.5'/><polyline points='21 15 16 10 5 21'/></svg>";
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    function formatCurrency(val) {
-      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
-    }
-
-    function showToast(message, type = 'success') {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      toast.className = `toast ${type}`;
-      toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}"></i> ${escapeHtml(message)}`;
-      container.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
-    }
-
-    function compressImage(file, maxWidth, maxHeight, quality = 0.8) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (event) => {
-          const img = new Image();
-          img.src = event.target.result;
-          img.onload = () => {
-            let width = img.width;
-            let height = img.height;
-
-            if (width > maxWidth) {
-              height = Math.round((height * maxWidth) / width);
-              width = maxWidth;
-            }
-            if (height > maxHeight) {
-              width = Math.round((width * maxHeight) / height);
-              height = maxHeight;
-            }
-
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-
-            canvas.toBlob(
-              (blob) => {
-                if (blob) resolve(blob);
-                else reject(new Error('Erro ao comprimir imagem'));
-              },
-              'image/jpeg',
-              quality
-            );
-          };
-          img.onerror = (err) => reject(err);
-        };
-        reader.onerror = (err) => reject(err);
-      });
-    }
-
-    // LISTENERS FIREBASE
-    onAuthStateChanged(auth, (user) => {
-      currentUser = user;
-      updateUIAuthStatus();
-    });
-
-    onSnapshot(doc(db, "store_config", "info"), (docSnap) => {
-      if (docSnap.exists()) {
-        storeConfig = docSnap.data();
-      }
-      renderStoreInfo();
-    });
-
-    onSnapshot(doc(db, "categories", "list"), (docSnap) => {
-      if (docSnap.exists()) {
-        categories = docSnap.data().items || [];
-      } else {
-        categories = [];
-      }
-      renderCategoriesBar();
-      renderCategoryManageList();
-      renderProductSelectCategories();
-      renderProducts();
-    });
-
-    onSnapshot(collection(db, "products"), (snapshot) => {
-      products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      renderProducts();
-    });
-
-    // RENDERIZACAO DA UI
-    function updateUIAuthStatus() {
-      const statusBadge = document.getElementById('status-badge');
-      const statusText = document.getElementById('status-text');
-      const admButtonsGroup = document.getElementById('adm-buttons-group');
-      const btnOpenLoginModal = document.getElementById('btn-open-login-modal');
-      const btnEditStore = document.getElementById('btn-open-store-modal');
-
-      if (currentUser) {
-        statusBadge.classList.remove('off');
-        statusText.textContent = "Modo Administrador Ativo";
-        admButtonsGroup.style.display = "flex";
-        btnOpenLoginModal.style.display = "none";
-        btnEditStore.style.display = "flex";
-      } else {
-        statusBadge.classList.add('off');
-        statusText.textContent = "Modo Cliente";
-        admButtonsGroup.style.display = "none";
-        btnOpenLoginModal.style.display = "inline-flex";
-        btnEditStore.style.display = "none";
-      }
-      renderProducts();
-    }
-
-    function renderStoreInfo() {
-      document.getElementById('store-name-display').textContent = storeConfig.name || "Minha Loja Digital";
-      document.getElementById('store-desc-display').textContent = storeConfig.description || "";
-      const coverImg = document.getElementById('store-cover-img');
-      coverImg.src = storeConfig.coverUrl ? storeConfig.coverUrl : SVG_FALLBACK;
-    }
-
-    function renderCategoriesBar() {
-      const bar = document.getElementById('categories-bar');
-      const allCat = ["Todos", ...categories];
-      bar.innerHTML = allCat.map(cat => `
-        <button class="cat-pill ${selectedCategoryFilter === cat ? 'active' : ''}" data-cat="${escapeHtml(cat)}">
-          ${escapeHtml(cat)}
-        </button>
-      `).join('');
-
-      bar.querySelectorAll('.cat-pill').forEach(btn => {
-        btn.addEventListener('click', () => {
-          selectedCategoryFilter = btn.getAttribute('data-cat');
-          renderCategoriesBar();
-          renderProducts();
-        });
-      });
-    }
-
-    function renderCategoryManageList() {
-      const container = document.getElementById('categories-list-manage');
-      if (categories.length === 0) {
-        container.innerHTML = `<p style="font-size:0.85rem; color:#888;">Nenhuma categoria cadastrada.</p>`;
-        return;
-      }
-      container.innerHTML = categories.map((cat, index) => `
-        <div class="cat-item-row">
-          <span>${escapeHtml(cat)}</span>
-          <button class="btn-adm-icon delete btn-remove-cat" data-index="${index}">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        </div>
-      `).join('');
-
-      container.querySelectorAll('.btn-remove-cat').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const idx = parseInt(btn.getAttribute('data-index'));
-          categories.splice(idx, 1);
-          await setDoc(doc(db, "categories", "list"), { items: categories });
-          showToast("Categoria removida!");
-        });
-      });
-    }
-
-    function renderProductSelectCategories() {
-      const select = document.getElementById('prod-category');
-      if (categories.length === 0) {
-        select.innerHTML = `<option value="Geral">Geral</option>`;
-        return;
-      }
-      select.innerHTML = categories.map(cat => `
-        <option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>
-      `).join('');
-    }
-
-    function renderProducts() {
-      const container = document.getElementById('products-container');
-      
-      let filtered = products.filter(p => {
-        const matchesCat = selectedCategoryFilter === "Todos" || p.category === selectedCategoryFilter;
-        const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                              (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()));
-        return matchesCat && matchesSearch;
-      });
-
-      if (filtered.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding: 40px; color: #888;">Nenhum produto encontrado.</div>`;
-        return;
-      }
-
-      let html = '';
-      if (selectedCategoryFilter === "Todos" && !searchQuery) {
-        const grouped = {};
-        filtered.forEach(p => {
-          const cat = p.category || 'Geral';
-          if (!grouped[cat]) grouped[cat] = [];
-          grouped[cat].push(p);
-        });
-
-        for (const cat in grouped) {
-          html += `<h2 class="category-section-title">${escapeHtml(cat)}</h2>`;
-          html += `<div class="products-grid">${grouped[cat].map(p => createProductCardHTML(p)).join('')}</div>`;
-        }
-      } else {
-        html = `<div class="products-grid" style="margin-top:20px;">${filtered.map(p => createProductCardHTML(p)).join('')}</div>`;
-      }
-
-      container.innerHTML = html;
-      attachProductCardEvents();
-    }
-
-    function createProductCardHTML(product) {
-      const admButtons = currentUser ? `
-        <div class="product-adm-actions">
-          <button class="btn-adm-icon edit btn-edit-prod" data-id="${product.id}"><i class="fa-solid fa-pen"></i></button>
-          <button class="btn-adm-icon delete btn-delete-prod" data-id="${product.id}"><i class="fa-solid fa-trash"></i></button>
-        </div>
-      ` : '';
-
-      const imgSrc = product.imageUrl ? escapeHtml(product.imageUrl) : SVG_FALLBACK;
-
-      return `
-        <div class="product-card">
-          <div class="product-img-wrapper">
-            <img src="${imgSrc}" class="product-img" alt="${escapeHtml(product.name)}">
-            ${admButtons}
-          </div>
-          <div class="product-details">
-            <h3 class="product-title">${escapeHtml(product.name)}</h3>
-            <p class="product-desc">${escapeHtml(product.description || '')}</p>
-            <div class="product-bottom">
-              <span class="product-price">${formatCurrency(product.price)}</span>
-              <button class="btn-add-cart" data-id="${product.id}">
-                <i class="fa-solid fa-cart-plus"></i> Adicionar
-              </button>
+    <!-- Header Principal -->
+    <header>
+        <div class="header-top">
+            <div class="brand-logo">
+                <i class="fa-solid fa-utensils"></i>
+                <span>Cardápio Virtual</span>
             </div>
-          </div>
+            <button class="btn-header" id="btnAdminAccess">
+                <i class="fa-solid fa-user-lock"></i>
+                <span id="lblAdminBtn">Painel Admin</span>
+            </button>
         </div>
-      `;
-    }
 
-    function attachProductCardEvents() {
-      document.querySelectorAll('.btn-add-cart').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const id = btn.getAttribute('data-id');
-          const prod = products.find(p => p.id === id);
-          if (prod) addToCart(prod);
-        });
-      });
+        <div class="header-hero">
+            <h1 id="heroTitle">Cardápio Virtual</h1>
+            <p id="heroSub">Sabores autênticos preparados com ingredientes selecionados</p>
+            
+            <!-- Seletor de Idioma -->
+            <div class="lang-bar">
+                <button class="lang-btn active" onclick="setLanguage('pt')">🇧🇷 PT</button>
+                <button class="lang-btn" onclick="setLanguage('en')">🇺🇸 EN</button>
+                <button class="lang-btn" onclick="setLanguage('zh')">🇨🇳 ZH</button>
+                <button class="lang-btn" onclick="setLanguage('fr')">🇫🇷 FR</button>
+                <button class="lang-btn" onclick="setLanguage('it')">🇮🇹 IT</button>
+                <button class="lang-btn" onclick="setLanguage('de')">🇩🇪 DE</button>
+            </div>
+        </div>
+    </header>
 
-      if (currentUser) {
-        document.querySelectorAll('.btn-edit-prod').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const id = btn.getAttribute('data-id');
-            const prod = products.find(p => p.id === id);
-            if (prod) openEditProductModal(prod);
-          });
-        });
+    <!-- Área Pública -->
+    <main>
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="publicSearchInput" class="form-control" placeholder="Buscar prato ou categoria..." oninput="renderPublicMenu()">
+        </div>
 
-        document.querySelectorAll('.btn-delete-prod').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const id = btn.getAttribute('data-id');
-            if (confirm("Tem certeza que deseja excluir este produto?")) {
-              await deleteDoc(doc(db, "products", id));
-              showToast("Produto excluído com sucesso!");
+        <div id="publicMenuContainer"></div>
+    </main>
+
+    <!-- Modal Login Admin -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-lock"></i> Acesso Restrito</h2>
+                <button class="btn-close" onclick="closeModal('loginModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="loginEmail">E-mail Administrativo</label>
+                        <input type="email" id="loginEmail" class="form-control" placeholder="admin@cardapiovirtual.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Senha</label>
+                        <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <i class="fa-solid fa-right-to-bracket"></i> Entrar no Painel
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Painel do Gestor -->
+    <div class="modal-overlay" id="adminModal">
+        <div class="modal-container" style="max-width: 750px;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-sliders"></i> Gerenciamento do Cardápio Virtual</h2>
+                <button class="btn-close" onclick="closeModal('adminModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                
+                <form id="productForm" onsubmit="handleSaveProduct(event)">
+                    <input type="hidden" id="editProductId">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="prodNamePt">Nome do Prato (Português) *</label>
+                            <input type="text" id="prodNamePt" class="form-control" placeholder="Ex: Peixada Cearense" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="prodCategory">Categoria *</label>
+                            <input type="text" id="prodCategory" class="form-control" placeholder="Ex: Pratos Principais" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="prodPrice">Preço (R$) *</label>
+                            <input type="number" step="0.01" id="prodPrice" class="form-control" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="prodAllergensManual">Alérgenos (Separados por vírgula)</label>
+                            <input type="text" id="prodAllergensManual" class="form-control" placeholder="Ex: Glúten, Lactose">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prodDescPt">Descrição Completa (Português) *</label>
+                        <textarea id="prodDescPt" class="form-control" rows="3" placeholder="Descreva os ingredientes..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="prodAvailable" checked>
+                            <span>Produto Disponível para Venda</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="btnSubmitProduct">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span id="btnSubmitText">Salvar e Gerar Traduções IA</span>
+                    </button>
+
+                    <div class="ai-loading-status" id="aiLoadingStatus">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <span>✨ Gerando traduções via IA Gemini...</span>
+                    </div>
+                </form>
+
+                <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--border);">
+
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="adminSearchInput" class="form-control" placeholder="Filtrar lista de produtos..." oninput="renderAdminProductList()">
+                </div>
+
+                <h3 style="font-size: 1rem; margin-bottom: 10px;">Produtos Cadastrados (Ordem Alfabética)</h3>
+                <div id="adminProductList"></div>
+
+                <div style="margin-top: 20px; text-align: right;">
+                    <button class="btn-header" style="background: #e53e3e; color: white;" onclick="handleLogout()">
+                        <i class="fa-solid fa-right-from-bracket"></i> Sair do Painel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Script Único da Aplicação em ES6 Modules -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { 
+            getFirestore, 
+            collection, 
+            onSnapshot, 
+            addDoc, 
+            updateDoc, 
+            deleteDoc, 
+            doc, 
+            serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            signOut, 
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        // Configuração do Firebase 'cardvirt-b8b42'
+        const firebaseConfig = {
+            apiKey: "AIzaSyB9ZyY3zwX3NPbj56NWaTIZ9JhKf-hKhk0",
+            authDomain: "cardvirt-b8b42.firebaseapp.com",
+            projectId: "cardvirt-b8b42",
+            storageBucket: "cardvirt-b8b42.firebasestorage.app",
+            messagingSenderId: "168829829538",
+            appId: "1:168829829538:web:1ffd3c3475d6f6324e72fb"
+        };
+
+        // Chave da API do Gemini
+        const GEMINI_API_KEY = "SUA_CHAVE_GEMINI_API_AQUI";
+
+        // Inicialização do Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Estado Global da Aplicação
+        let currentLang = "pt";
+        let products = [];
+        let currentUser = null;
+
+        const uiText = {
+            pt: { heroTitle: "Cardápio Virtual", heroSub: "Sabores autênticos preparados com ingredientes selecionados", search: "Buscar prato ou categoria..." },
+            en: { heroTitle: "Virtual Menu", heroSub: "Authentic flavors crafted with selected ingredients", search: "Search dish or category..." },
+            zh: { heroTitle: "电子菜单", heroSub: "严选食材制作的纯正美味", search: "搜索菜品或类别..." },
+            fr: { heroTitle: "Menu Virtuel", heroSub: "Des saveurs authentiques préparées avec des ingrédients sélectionnés", search: "Rechercher un plat ou une catégorie..." },
+            it: { heroTitle: "Menu Virtuale", heroSub: "Sapori autentici preparati con ingredienti selezionati", search: "Cerca piatto o categoria..." },
+            de: { heroTitle: "Virtuelle Speisekarte", heroSub: "Authentische Aromen aus ausgewählten Zutaten", search: "Gericht oder Kategorie suchen..." }
+        };
+
+        // Função para chamar o Google Gemini API (gemini-2.5-flash)
+        async function generateTranslationsAndAllergens(namePt, descPt, manualAllergens = []) {
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+            const prompt = `
+Você é um tradutor gastronômico e especialista em segurança alimentar.
+Analise este prato:
+- Nome (PT): "${namePt}"
+- Descrição (PT): "${descPt}"
+- Alérgenos Informados Manualmente: ${JSON.stringify(manualAllergens)}
+
+Sua tarefa:
+1. Traduzir o Nome e Descrição para: Inglês ('en'), Chinês ('zh'), Francês ('fr'), Italiano ('it') e Alemão ('de'). O Português ('pt') deve ser o texto original.
+2. Identificar alérgenos alimentares no texto (ex: Glúten, Lactose, Frutos do Mar, Ovos, Nozes, Amendoim, Soja) e mesclar com os informados manualmente sem duplicar.
+
+Retorne EXCLUSIVAMENTE um objeto JSON válido (sem marcações markdown como \`\`\`json):
+{
+  "translations": {
+    "pt": { "name": "${namePt}", "description": "${descPt}" },
+    "en": { "name": "...", "description": "..." },
+    "zh": { "name": "...", "description": "..." },
+    "fr": { "name": "...", "description": "..." },
+    "it": { "name": "...", "description": "..." },
+    "de": { "name": "...", "description": "..." }
+  },
+  "allergens": ["Glúten", "Lactose"]
+}
+`;
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro na API do Gemini: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                let rawText = data.candidates[0].content.parts[0].text.trim();
+
+                if (rawText.startsWith("```")) {
+                    rawText = rawText.replace(/^```(json)?\n?/, "").replace(/\n?```$/, "");
+                }
+
+                return JSON.parse(rawText);
+            } catch (error) {
+                console.warn("Falha na chamada da IA Gemini. Aplicando fallback local:", error);
+                
+                return {
+                    translations: {
+                        pt: { name: namePt, description: descPt },
+                        en: { name: namePt, description: descPt },
+                        zh: { name: namePt, description: descPt },
+                        fr: { name: namePt, description: descPt },
+                        it: { name: namePt, description: descPt },
+                        de: { name: namePt, description: descPt }
+                    },
+                    allergens: manualAllergens
+                };
             }
-          });
+        }
+
+        // Eventos do DOM
+        document.addEventListener("DOMContentLoaded", () => {
+            initAuthListener();
+            initFirestoreListener();
+
+            document.getElementById("btnAdminAccess").addEventListener("click", () => {
+                if (currentUser) {
+                    openModal("adminModal");
+                } else {
+                    openModal("loginModal");
+                }
+            });
         });
-      }
-    }
 
-    // CARRINHO & WHATSAPP
-    function addToCart(product) {
-      const existing = cart.find(item => item.id === product.id);
-      if (existing) {
-        existing.quantity += 1;
-      } else {
-        cart.push({ ...product, quantity: 1 });
-      }
-      updateCartUI();
-      showToast(`${product.name} adicionado ao carrinho!`);
-    }
-
-    function updateCartUI() {
-      const cartFooter = document.getElementById('cart-footer');
-      const cartCount = document.getElementById('cart-count');
-      const cartTotal = document.getElementById('cart-total');
-
-      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-      const totalValue = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-      if (totalItems > 0) {
-        cartFooter.style.display = 'flex';
-        cartCount.textContent = totalItems;
-        cartTotal.textContent = formatCurrency(totalValue);
-      } else {
-        cartFooter.style.display = 'none';
-      }
-    }
-
-    document.getElementById('btn-finish-order').addEventListener('click', () => {
-      if (cart.length === 0) return;
-
-      if (!storeConfig.phone) {
-        alert("O número de WhatsApp do estabelecimento não está configurado.");
-        return;
-      }
-
-      const phoneClean = storeConfig.phone.replace(/\D/g, '');
-      if (phoneClean.length < 10) {
-        alert("O número de WhatsApp cadastrado parece ser inválido.");
-        return;
-      }
-
-      let message = `*Novo Pedido - ${storeConfig.name}*\n\n`;
-      let total = 0;
-
-      cart.forEach(item => {
-        const subtotal = item.price * item.quantity;
-        total += subtotal;
-        message += `• ${item.quantity}x ${item.name} - ${formatCurrency(subtotal)}\n`;
-      });
-
-      message += `\n*Total:* ${formatCurrency(total)}`;
-
-      const encodedMessage = encodeURIComponent(message);
-      const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneClean}&text=${encodedMessage}`;
-
-      window.open(whatsappUrl, '_blank');
-    });
-
-    // EVENTOS DOS MODAIS
-    document.getElementById('search-input').addEventListener('input', (e) => {
-      searchQuery = e.target.value;
-      renderProducts();
-    });
-
-    function openModal(id) { document.getElementById(id).classList.add('active'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-    document.querySelectorAll('[data-close]').forEach(btn => {
-      btn.addEventListener('click', () => closeModal(btn.getAttribute('data-close')));
-    });
-
-    document.getElementById('btn-open-login-modal').addEventListener('click', () => openModal('modal-login'));
-    document.getElementById('btn-open-cat-modal').addEventListener('click', () => openModal('modal-categories'));
-    document.getElementById('btn-open-store-modal').addEventListener('click', () => {
-      document.getElementById('store-name-input').value = storeConfig.name || '';
-      document.getElementById('store-desc-input').value = storeConfig.description || '';
-      document.getElementById('store-phone-input').value = storeConfig.phone || '';
-      document.getElementById('store-cover-url').value = storeConfig.coverUrl || '';
-      openModal('modal-store');
-    });
-
-    document.getElementById('btn-open-prod-modal').addEventListener('click', () => {
-      document.getElementById('form-product').reset();
-      document.getElementById('product-id').value = '';
-      document.getElementById('modal-product-title').textContent = "Novo Produto";
-      renderProductSelectCategories();
-      openModal('modal-product');
-    });
-
-    function openEditProductModal(product) {
-      document.getElementById('product-id').value = product.id;
-      document.getElementById('prod-name').value = product.name;
-      renderProductSelectCategories();
-      document.getElementById('prod-category').value = product.category || (categories[0] || 'Geral');
-      document.getElementById('prod-price').value = product.price;
-      document.getElementById('prod-desc').value = product.description || '';
-      document.getElementById('prod-img-url').value = product.imageUrl || '';
-      document.getElementById('modal-product-title').textContent = "Editar Produto";
-      openModal('modal-product');
-    }
-
-    // FORMULÁRIOS
-    document.getElementById('form-login').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('btn-submit-login');
-      btn.disabled = true;
-      btn.textContent = "Entrando...";
-
-      const email = document.getElementById('login-email').value;
-      const pass = document.getElementById('login-password').value;
-      try {
-        await signInWithEmailAndPassword(auth, email, pass);
-        closeModal('modal-login');
-        showToast("Login realizado com sucesso!");
-      } catch (err) {
-        showToast("Erro ao realizar login: " + err.message, 'error');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Entrar";
-      }
-    });
-
-    document.getElementById('btn-logout').addEventListener('click', async () => {
-      await signOut(auth);
-      showToast("Sessão encerrada.");
-    });
-
-    document.getElementById('form-add-category').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const input = document.getElementById('new-cat-input');
-      const val = input.value.trim();
-      if (val && !categories.includes(val)) {
-        categories.push(val);
-        await setDoc(doc(db, "categories", "list"), { items: categories });
-        input.value = '';
-        showToast("Categoria adicionada!");
-      }
-    });
-
-    document.getElementById('form-store').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('btn-submit-store');
-      btn.disabled = true;
-      btn.textContent = "Salvando...";
-
-      const name = document.getElementById('store-name-input').value;
-      const description = document.getElementById('store-desc-input').value;
-      const phone = document.getElementById('store-phone-input').value;
-      const fileInput = document.getElementById('store-cover-file');
-      let coverUrl = document.getElementById('store-cover-url').value;
-
-      try {
-        if (fileInput.files.length > 0) {
-          const compressedBlob = await compressImage(fileInput.files[0], 1200, 600, 0.8);
-          const storageRef = ref(storage, `store/cover_${Date.now()}.jpg`);
-          await uploadBytes(storageRef, compressedBlob);
-          coverUrl = await getDownloadURL(storageRef);
+        function initAuthListener() {
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                const btnLabel = document.getElementById("lblAdminBtn");
+                btnLabel.innerText = user ? "Painel Gestor" : "Painel Admin";
+            });
         }
 
-        await setDoc(doc(db, "store_config", "info"), { name, description, phone, coverUrl });
-        closeModal('modal-store');
-        showToast("Configurações salvas com sucesso!");
-      } catch (err) {
-        showToast("Erro ao salvar loja: " + err.message, 'error');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Salvar Alterações";
-      }
-    });
-
-    document.getElementById('form-product').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('btn-submit-product');
-      btn.disabled = true;
-      btn.textContent = "Salvando...";
-
-      const id = document.getElementById('product-id').value;
-      const name = document.getElementById('prod-name').value;
-      const category = document.getElementById('prod-category').value || "Geral";
-      const price = parseFloat(document.getElementById('prod-price').value);
-      const description = document.getElementById('prod-desc').value;
-      const fileInput = document.getElementById('prod-img-file');
-      let imageUrl = document.getElementById('prod-img-url').value;
-
-      try {
-        if (fileInput.files.length > 0) {
-          const compressedBlob = await compressImage(fileInput.files[0], 800, 800, 0.8);
-          const storageRef = ref(storage, `products/prod_${Date.now()}.jpg`);
-          await uploadBytes(storageRef, compressedBlob);
-          imageUrl = await getDownloadURL(storageRef);
+        function initFirestoreListener() {
+            onSnapshot(collection(db, "menu_items"), (snapshot) => {
+                products = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                
+                renderPublicMenu();
+                if (currentUser) renderAdminProductList();
+            }, (error) => {
+                showToast("Erro ao carregar cardápio: " + error.message);
+            });
         }
 
-        const productData = { name, category, price, description, imageUrl };
+        window.setLanguage = function(lang) {
+            currentLang = lang;
+            document.querySelectorAll(".lang-btn").forEach(btn => btn.classList.remove("active"));
+            if (event && event.target) {
+                event.target.classList.add("active");
+            }
 
-        if (id) {
-          await updateDoc(doc(db, "products", id), productData);
-          showToast("Produto atualizado!");
-        } else {
-          await addDoc(collection(db, "products"), productData);
-          showToast("Produto cadastrado!");
+            document.getElementById("heroTitle").innerText = uiText[lang].heroTitle;
+            document.getElementById("heroSub").innerText = uiText[lang].heroSub;
+            document.getElementById("publicSearchInput").placeholder = uiText[lang].search;
+
+            renderPublicMenu();
+        };
+
+        window.renderPublicMenu = function() {
+            const container = document.getElementById("publicMenuContainer");
+            const searchVal = document.getElementById("publicSearchInput").value.toLowerCase().trim();
+
+            if (products.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color: var(--text-muted); padding: 40px;">Nenhum produto cadastrado no momento.</p>`;
+                return;
+            }
+
+            const filtered = products.filter(item => {
+                const translation = item.translations?.[currentLang] || item.translations?.["pt"] || {};
+                const nameMatch = (translation.name || "").toLowerCase().includes(searchVal);
+                const categoryMatch = (item.category || "").toLowerCase().includes(searchVal);
+                return nameMatch || categoryMatch;
+            });
+
+            // Ordenação Alfabética Estrita pelo nome em Português
+            filtered.sort((a, b) => {
+                return (a.translations?.pt?.name || "").localeCompare(b.translations?.pt?.name || "", 'pt-BR');
+            });
+
+            // Categorias também ordenadas alfabeticamente
+            const categories = [...new Set(filtered.map(p => p.category))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+
+            if (categories.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color: var(--text-muted); padding: 40px;">Nenhum item encontrado.</p>`;
+                return;
+            }
+
+            container.innerHTML = categories.map(cat => {
+                const catProducts = filtered.filter(p => p.category === cat);
+
+                return `
+                    <div class="section-title">
+                        <i class="fa-solid fa-utensils" style="color: var(--primary);"></i> ${cat}
+                    </div>
+                    <div class="menu-grid">
+                        ${catProducts.map(item => {
+                            const trans = item.translations?.[currentLang] || item.translations?.["pt"] || {};
+                            const formattedPrice = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.price || 0);
+
+                            return `
+                                <div class="product-card ${!item.available ? 'unavailable' : ''}">
+                                    <div>
+                                        <div class="product-header">
+                                            <h3 class="product-title">${trans.name || 'Sem nome'}</h3>
+                                            <span class="product-price">${formattedPrice}</span>
+                                        </div>
+                                        <p class="product-desc">${trans.description || ''}</p>
+                                    </div>
+                                    <div>
+                                        ${item.allergens && item.allergens.length > 0 ? `
+                                            <div class="allergens-list">
+                                                ${item.allergens.map(a => `<span class="allergen-badge"><i class="fa-solid fa-triangle-exclamation"></i> ${a}</span>`).join('')}
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }).join('');
+        };
+
+        window.handleLogin = async function(e) {
+            e.preventDefault();
+            const email = document.getElementById("loginEmail").value;
+            const pass = document.getElementById("loginPassword").value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                closeModal("loginModal");
+                openModal("adminModal");
+                showToast("Acesso autorizado!");
+            } catch (error) {
+                showToast("Erro de autenticação: " + error.message);
+            }
+        };
+
+        window.handleLogout = async function() {
+            await signOut(auth);
+            closeModal("adminModal");
+            showToast("Sessão encerrada.");
+        };
+
+        window.handleSaveProduct = async function(e) {
+            e.preventDefault();
+
+            const editId = document.getElementById("editProductId").value;
+            const namePt = document.getElementById("prodNamePt").value.trim();
+            const category = document.getElementById("prodCategory").value.trim();
+            const price = parseFloat(document.getElementById("prodPrice").value);
+            const descPt = document.getElementById("prodDescPt").value.trim();
+            const available = document.getElementById("prodAvailable").checked;
+            const rawManualAllergens = document.getElementById("prodAllergensManual").value;
+
+            const manualAllergens = rawManualAllergens
+                ? rawManualAllergens.split(',').map(a => a.trim()).filter(a => a.length > 0)
+                : [];
+
+            const btnSubmit = document.getElementById("btnSubmitProduct");
+            const loadingStatus = document.getElementById("aiLoadingStatus");
+            btnSubmit.disabled = true;
+            loadingStatus.classList.add("active");
+
+            try {
+                const aiResult = await generateTranslationsAndAllergens(namePt, descPt, manualAllergens);
+
+                const productDoc = {
+                    category: category,
+                    price: price,
+                    available: available,
+                    allergens: aiResult.allergens || manualAllergens,
+                    translations: aiResult.translations,
+                    updatedAt: serverTimestamp()
+                };
+
+                if (editId) {
+                    await updateDoc(doc(db, "menu_items", editId), productDoc);
+                    showToast("Produto atualizado!");
+                } else {
+                    productDoc.createdAt = serverTimestamp();
+                    await addDoc(collection(db, "menu_items"), productDoc);
+                    showToast("Produto criado com IA!");
+                }
+
+                resetProductForm();
+            } catch (err) {
+                showToast("Erro ao salvar produto: " + err.message);
+            } finally {
+                btnSubmit.disabled = false;
+                loadingStatus.classList.remove("active");
+            }
+        };
+
+        window.renderAdminProductList = function() {
+            const container = document.getElementById("adminProductList");
+            const filterVal = document.getElementById("adminSearchInput").value.toLowerCase().trim();
+
+            const filtered = products.filter(p => {
+                const name = (p.translations?.pt?.name || "").toLowerCase();
+                const cat = (p.category || "").toLowerCase();
+                return name.includes(filterVal) || cat.includes(filterVal);
+            });
+
+            filtered.sort((a, b) => (a.translations?.pt?.name || "").localeCompare(b.translations?.pt?.name || "", 'pt-BR'));
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p style="font-size:0.85rem; color:var(--text-muted);">Nenhum produto cadastrado.</p>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(item => `
+                <div class="product-card" style="margin-bottom: 10px; padding: 10px 14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <strong>${item.translations?.pt?.name || 'Sem nome'}</strong>
+                            <div style="font-size:0.8rem; color:var(--text-muted);">${item.category} - R$ ${(item.price || 0).toFixed(2)}</div>
+                        </div>
+                        <div class="admin-card-actions" style="margin-top:0; padding-top:0; border:none;">
+                            <button class="btn-action btn-edit" onclick="editProduct('${item.id}')"><i class="fa-solid fa-pen"></i> Editar</button>
+                            <button class="btn-action btn-delete" onclick="deleteProduct('${item.id}')"><i class="fa-solid fa-trash"></i> Excluir</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.editProduct = function(id) {
+            const prod = products.find(p => p.id === id);
+            if (!prod) return;
+
+            document.getElementById("editProductId").value = prod.id;
+            document.getElementById("prodNamePt").value = prod.translations?.pt?.name || "";
+            document.getElementById("prodCategory").value = prod.category || "";
+            document.getElementById("prodPrice").value = prod.price || "";
+            document.getElementById("prodDescPt").value = prod.translations?.pt?.description || "";
+            document.getElementById("prodAvailable").checked = prod.available !== false;
+            document.getElementById("prodAllergensManual").value = (prod.allergens || []).join(", ");
+
+            document.getElementById("btnSubmitText").innerText = "Atualizar Produto (Re-gerar IA)";
+        };
+
+        window.deleteProduct = async function(id) {
+            if (confirm("Deseja remover este produto do cardápio?")) {
+                try {
+                    await deleteDoc(doc(db, "menu_items", id));
+                    showToast("Produto removido!");
+                } catch (e) {
+                    showToast("Erro ao excluir: " + e.message);
+                }
+            }
+        };
+
+        function resetProductForm() {
+            document.getElementById("editProductId").value = "";
+            document.getElementById("productForm").reset();
+            document.getElementById("btnSubmitText").innerText = "Salvar e Gerar Traduções IA";
         }
 
-        closeModal('modal-product');
-      } catch (err) {
-        showToast("Erro ao salvar produto: " + err.message, 'error');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Salvar Produto";
-      }
-    });
-  </script>
+        window.openModal = function(id) {
+            document.getElementById(id).classList.add("active");
+        };
+
+        window.closeModal = function(id) {
+            document.getElementById(id).classList.remove("active");
+            if (id === "adminModal") resetProductForm();
+        };
+
+        function showToast(msg) {
+            const container = document.getElementById("toastContainer");
+            const toast = document.createElement("div");
+            toast.className = "toast";
+            toast.innerText = msg;
+            container.appendChild(toast);
+
+            setTimeout(() => toast.classList.add("show"), 10);
+            setTimeout(() => {
+                toast.classList.remove("show");
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+    </script>
 </body>
 </html>
