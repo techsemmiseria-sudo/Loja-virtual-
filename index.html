@@ -467,15 +467,16 @@
         }
 
         .user-badge {
-            background: rgba(255,255,255,0.1);
-            padding: 6px 12px;
+            background: #edf2f7;
+            padding: 8px 12px;
             border-radius: 6px;
             font-size: 0.8rem;
-            color: #cbd5e0;
+            color: var(--text-dark);
             margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 8px;
+            border: 1px solid var(--border);
         }
     </style>
 </head>
@@ -500,12 +501,12 @@
             
             <!-- Seletor de Idioma -->
             <div class="lang-bar">
-                <button class="lang-btn active" onclick="setLanguage('pt')">🇧🇷 PT</button>
-                <button class="lang-btn" onclick="setLanguage('en')">🇺🇸 EN</button>
-                <button class="lang-btn" onclick="setLanguage('zh')">🇨🇳 ZH</button>
-                <button class="lang-btn" onclick="setLanguage('fr')">🇫🇷 FR</button>
-                <button class="lang-btn" onclick="setLanguage('it')">🇮🇹 IT</button>
-                <button class="lang-btn" onclick="setLanguage('de')">🇩🇪 DE</button>
+                <button class="lang-btn active" onclick="setLanguage('pt', this)">🇧🇷 PT</button>
+                <button class="lang-btn" onclick="setLanguage('en', this)">🇺🇸 EN</button>
+                <button class="lang-btn" onclick="setLanguage('zh', this)">🇨🇳 ZH</button>
+                <button class="lang-btn" onclick="setLanguage('fr', this)">🇫🇷 FR</button>
+                <button class="lang-btn" onclick="setLanguage('it', this)">🇮🇹 IT</button>
+                <button class="lang-btn" onclick="setLanguage('de', this)">🇩🇪 DE</button>
             </div>
         </div>
     </header>
@@ -658,7 +659,7 @@
             appId: "1:168829829538:web:1ffd3c3475d6f6324e72fb"
         };
 
-        // Chave da API do Gemini
+        // Chave da API do Gemini (Insira sua chave do Google AI Studio se desejar IA ativa)
         const GEMINI_API_KEY = "SUA_CHAVE_GEMINI_API_AQUI";
 
         // Inicialização do Firebase
@@ -791,11 +792,12 @@ Retorne EXCLUSIVAMENTE um objeto JSON válido (sem marcações markdown como \`\
             });
         }
 
-        window.setLanguage = function(lang) {
+        window.setLanguage = function(lang, btnElement) {
             currentLang = lang;
             document.querySelectorAll(".lang-btn").forEach(btn => btn.classList.remove("active"));
-            if (event && event.target) {
-                event.target.classList.add("active");
+            
+            if (btnElement) {
+                btnElement.classList.add("active");
             }
 
             document.getElementById("heroTitle").innerText = uiText[lang].heroTitle;
@@ -891,7 +893,6 @@ Retorne EXCLUSIVAMENTE um objeto JSON válido (sem marcações markdown como \`\
             showToast("Sessão encerrada.");
         };
 
-        // Função auxiliar para tratar erros de permissão do Firestore Security Rules
         function handleFirestoreError(error) {
             if (error.code === 'permission-denied') {
                 showToast("Acesso negado: Seu e-mail não possui permissão de Administrador!");
@@ -1040,4 +1041,3 @@ Retorne EXCLUSIVAMENTE um objeto JSON válido (sem marcações markdown como \`\
     </script>
 </body>
 </html>
-
