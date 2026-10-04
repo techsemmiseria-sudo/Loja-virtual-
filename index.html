@@ -659,7 +659,7 @@
             appId: "1:168829829538:web:1ffd3c3475d6f6324e72fb"
         };
 
-        // Chave da API do Gemini (Insira sua chave do Google AI Studio se desejar IA ativa)
+        // Chave da API do Gemini (Insira sua chave do Google AI Studio para ativar as traduções por IA)
         const GEMINI_API_KEY = "SUA_CHAVE_GEMINI_API_AQUI";
 
         // Inicialização do Firebase
@@ -681,8 +681,13 @@
             de: { heroTitle: "Virtuelle Speisekarte", heroSub: "Authentische Aromen aus ausgewählten Zutaten", search: "Gericht oder Kategorie suchen..." }
         };
 
-        // Função para chamar o Google Gemini API (gemini-2.5-flash)
+        // Função para chamar a API do Google Gemini (gemini-2.5-flash)
         async function generateTranslationsAndAllergens(namePt, descPt, manualAllergens = []) {
+            if (!GEMINI_API_KEY || GEMINI_API_KEY === "SUA_CHAVE_GEMINI_API_AQUI") {
+                console.warn("Chave da API do Gemini não configurada. Aplicando fallback de texto puro.");
+                return getFallbackTranslations(namePt, descPt, manualAllergens);
+            }
+
             const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
             const prompt = `
@@ -733,19 +738,22 @@ Retorne EXCLUSIVAMENTE um objeto JSON válido (sem marcações markdown como \`\
                 return JSON.parse(rawText);
             } catch (error) {
                 console.warn("Falha na chamada da IA Gemini. Aplicando fallback local:", error);
-                
-                return {
-                    translations: {
-                        pt: { name: namePt, description: descPt },
-                        en: { name: namePt, description: descPt },
-                        zh: { name: namePt, description: descPt },
-                        fr: { name: namePt, description: descPt },
-                        it: { name: namePt, description: descPt },
-                        de: { name: namePt, description: descPt }
-                    },
-                    allergens: manualAllergens
-                };
+                return getFallbackTranslations(namePt, descPt, manualAllergens);
             }
+        }
+
+        function getFallbackTranslations(namePt, descPt, manualAllergens) {
+            return {
+                translations: {
+                    pt: { name: namePt, description: descPt },
+                    en: { name: namePt, description: descPt },
+                    zh: { name: namePt, description: descPt },
+                    fr: { name: namePt, description: descPt },
+                    it: { name: namePt, description: descPt },
+                    de: { name: namePt, description: descPt }
+                },
+                allergens: manualAllergens
+            };
         }
 
         // Eventos do DOM
@@ -895,9 +903,9 @@ Retorne EXCLUSIVAMENTE um objeto JSON válido (sem marcações markdown como \`\
 
         function handleFirestoreError(error) {
             if (error.code === 'permission-denied') {
-                showToast("Acesso negado: Seu e-mail não possui permissão de Administrador!");
+                showToast("Acesso negado: Seu e-mail não possui permissão de Administrador nas Regras do Firestore!");
             } else {
-                showToast("Erro de gravação: " + error.message);
+                showToast("Erro no Firestore: " + error.message);
             }
         }
 
@@ -935,11 +943,11 @@ Retorne EXCLUSIVAMENTE um objeto JSON válido (sem marcações markdown como \`\
 
                 if (editId) {
                     await updateDoc(doc(db, "menu_items", editId), productDoc);
-                    showToast("Produto atualizado!");
+                    showToast("Produto atualizado com sucesso!");
                 } else {
                     productDoc.createdAt = serverTimestamp();
                     await addDoc(collection(db, "menu_items"), productDoc);
-                    showToast("Produto criado com IA!");
+                    showToast("Produto cadastrado com sucesso!");
                 }
 
                 resetProductForm();
